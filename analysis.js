@@ -148,7 +148,7 @@ function analisarLeituraQAI(leitura) {
         humidity: leitura.humidity,
         co2: leitura.co2,
         co: leitura.co,
-        vocIndex: lectura.vocIndex,
+        vocIndex: leitura.vocIndex,
         pm25: leitura.pm25,
         pm10: leitura.pm10
     };
