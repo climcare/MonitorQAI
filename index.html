@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoramento QAI </title>
+    <title>Monitoramento QAI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -126,4 +126,22 @@
                             <span>VALOR</span>
                         </div>
                         <div class="flex justify-between"><span>NC 0.5 µm (Vírus/Bactérias):</span> <span class="text-slate-900 dark:text-white font-semibold" id="valNC05">--.-</span></div>
-                        <div class="flex justify-
+                        <div class="flex justify-between"><span>NC 1.0 µm:</span> <span class="text-slate-900 dark:text-white font-semibold" id="valNC10">--.-</span></div>
+                        <div class="flex justify-between"><span>NC 2.5 µm:</span> <span class="text-slate-900 dark:text-white font-semibold" id="valNC25">--.-</span></div>
+                        <div class="flex justify-between"><span>NC 10.0 µm (Poeira):</span> <span class="text-slate-900 dark:text-white font-semibold" id="valNC100">--.-</span></div>
+                        <div class="border-t border-slate-200 dark:border-slate-800/60 mt-2 pt-1.5 flex justify-between text-slate-400 text-[10px] font-sans">
+                            <span>Tamanho Médio da Partícula:</span>
+                            <span class="text-sky-600 dark:text-sky-400 font-semibold" id="valTypicalSize">--.- µm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="analysis.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
