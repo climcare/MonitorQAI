@@ -7,10 +7,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_pkzx4u5U9Xr407syiBE9yA_G7hUvGaw';
 let supabaseClient = null;
 
 // ====================================================================
-// INICIALIZADOR ASSÍNCRONO DA INTERFACE CLINICA
+// INICIALIZADOR ASSÍNCRONO DA INTERFACE CLÍNICA
 // ====================================================================
 window.onload = async () => {
     console.log("🏥 Inicializando Monitoramento QAI Clínico...");
+
+    // Ativa o gerenciador do seletor de temas (Claro/Escuro)
+    inicializarGerenciadorTema();
 
     if (typeof supabase !== "undefined") {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -22,12 +25,49 @@ window.onload = async () => {
     } else {
         console.error("❌ Falha crítica: Biblioteca Supabase inacessível (CDN offline).");
         document.getElementById('panelTriagem').innerHTML = `
-            <div class="bg-rose-950/40 border border-rose-900 p-4 rounded-lg text-rose-400 text-xs font-mono text-center">
+            <div class="bg-rose-100 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-900 p-4 rounded-lg text-rose-700 dark:text-rose-400 text-xs font-mono text-center">
                 ERRO CRÍTICO DE SISTEMA: Falha de conexão física com os servidores de telemetria.
             </div>
         `;
     }
 };
+
+// ====================================================================
+// GERENCIADOR DE TEMA DINÂMICO (LIGHT CLINICAL / DARK SUAVE)
+// ====================================================================
+function inicializarGerenciadorTema() {
+    const btn = document.getElementById('btnAlternarTema');
+    const ico = document.getElementById('icoTema');
+    const txt = document.getElementById('txtTema');
+    const body = document.body;
+
+    const temaSalvo = localStorage.getItem('qai-tema');
+    
+    // Começa no Modo Claro (padrão solicitado) se não houver registro
+    if (temaSalvo === 'dark') {
+        body.classList.add('dark');
+        ico.innerText = '☀️';
+        txt.innerText = 'MODO DIURNO';
+    } else {
+        body.classList.remove('dark');
+        ico.innerText = '🌙';
+        txt.innerText = 'MODO NOTURNO';
+    }
+
+    btn.addEventListener('click', () => {
+        if (body.classList.contains('dark')) {
+            body.classList.remove('dark');
+            ico.innerText = '🌙';
+            txt.innerText = 'MODO NOTURNO';
+            localStorage.setItem('qai-tema', 'light');
+        } else {
+            body.classList.add('dark');
+            ico.innerText = '☀️';
+            txt.innerText = 'MODO DIURNO';
+            localStorage.setItem('qai-tema', 'dark');
+        }
+    });
+}
 
 // ====================================================================
 // CONSUMO DO DATASTREAM (CONTRATO DE FLUXO)
@@ -49,9 +89,7 @@ async function processarCicloMonitoramento() {
         }
 
         if (leituraBruta) {
-            // Processamento do Motor Lógico (analysis.js)
             const relatorioClinico = analisarLeituraQAI(leituraBruta);
-            // Carga do renderizador visual
             atualizarInterfaceVisual(relatorioClinico);
         }
     } catch (err) {
@@ -72,13 +110,13 @@ function atualizarInterfaceVisual(relatorio) {
     document.getElementById('txtTimestamp').innerText = new Date(relatorio.carimbotempo).toLocaleTimeString('pt-BR');
 
     // 2. Mapeamento - Climatização
-    document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : '--.-'} <span class="text-base font-normal text-slate-500">°C</span>`;
-    document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : '--.-'} <span class="text-base font-normal text-slate-500">%</span>`;
-    document.getElementById('valDewPoint').innerHTML = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'} <span class="text-base font-normal text-sky-600">°C</span>`;
+    document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : '--.-'} <span class="text-base font-normal text-slate-400 dark:text-slate-500">°C</span>`;
+    document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : '--.-'} <span class="text-base font-normal text-slate-400 dark:text-slate-500">%</span>`;
+    document.getElementById('valDewPoint').innerHTML = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'} <span class="text-base font-normal text-sky-500 dark:text-sky-600">°C</span>`;
 
     // 3. Mapeamento - Gases Invisíveis
-    document.getElementById('valCO2').innerHTML = `${v.co2 || '----'} <span class="text-xs text-slate-500 font-normal">ppm</span>`;
-    document.getElementById('valCO').innerHTML = `${v.co ? v.co.toFixed(1) : '--.-'} <span class="text-xs text-slate-500 font-normal">ppm</span>`;
+    document.getElementById('valCO2').innerHTML = `${v.co2 || '----'} <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">ppm</span>`;
+    document.getElementById('valCO').innerHTML = `${v.co ? v.co.toFixed(1) : '--.-'} <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">ppm</span>`;
     document.getElementById('valVOC').innerText = v.vocIndex || '---';
 
     // 4. Mapeamento - Particulados Instrumentais
@@ -96,57 +134,58 @@ function atualizarInterfaceVisual(relatorio) {
 
     if (relatorio.statusGeral === "CONFORME") {
         badge.innerText = "ESTÁVEL / CONFORME";
-        badge.className = "px-3 py-1 rounded text-xs font-mono font-bold border bg-emerald-950/50 text-emerald-400 border-emerald-800";
+        badge.className = "px-3 py-1 rounded text-xs font-mono font-bold border bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800";
         
         painelTriagem.innerHTML = `
-            <div class="flex items-start gap-4 bg-emerald-950/20 border border-emerald-900/60 rounded-lg p-5">
+            <div class="flex items-start gap-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/60 rounded-lg p-5">
                 <div class="text-2xl mt-0.5">🛡️</div>
                 <div>
-                    <h3 class="text-sm font-bold text-emerald-400 font-mono uppercase tracking-wide">Estabilidade Sanitária Detectada</h3>
-                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                    <h3 class="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono uppercase tracking-wide">Estabilidade Sanitária Detectada</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                         Todos os parâmetros físico-químicos e particulados atmosféricos analisados encontram-se rigorosamente dentro dos limites estabelecidos pelas normas ANVISA RE 09 e ABNT NBR 17037. O ar interno apresenta excelentes taxas de renovação e filtração.
                     </p>
-                    <div class="mt-3 text-[11px] font-mono text-slate-500">NENHUMA AÇÃO DE MITIGAÇÃO É REQUERIDA NO MOMENTO.</div>
+                    <div class="mt-3 text-[11px] font-mono text-slate-400 dark:text-slate-500">NENHUMA AÇÃO DE MITIGAÇÃO É REQUERIDA NO MOMENTO.</div>
                 </div>
             </div>
         `;
     } else {
         if (relatorio.statusGeral === "CRÍTICO") {
             badge.innerText = "ALERTA CRÍTICO SANITÁRIO";
-            badge.className = "px-3 py-1 rounded text-xs font-mono font-bold border bg-rose-950/50 text-rose-400 border-rose-800 animate-pulse";
+            badge.className = "px-3 py-1 rounded text-xs font-mono font-bold border bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800 animate-pulse";
         } else {
             badge.innerText = "ATENÇÃO OPERACIONAL";
-            badge.className = "px-3 py-1 rounded text-xs font-mono font-bold border bg-amber-950/50 text-amber-400 border-amber-800";
+            badge.className = "px-3 py-1 rounded text-xs font-mono font-bold border bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800";
         }
 
         let htmlErros = "";
         
         relatorio.violacoes.forEach(erro => {
             const isCritico = erro.gravidade === "CRÍTICO";
-            // Injeção limpa de classes sem interpolação de strings parciais do Tailwind
-            const classeBorda = isCritico ? "border-rose-900/60" : "border-amber-900/60";
-            const classeFundo = isCritico ? "bg-rose-950/20" : "bg-amber-950/20";
-            const classeTexto = isCritico ? "text-rose-400" : "text-amber-400";
-            const classeSubBorda = isCritico ? "border-rose-900/40" : "border-amber-900/40";
+            
+            // Definição das classes adaptativas de cor para Modo Claro e Escuro
+            const classeBorda = isCritico ? "border-rose-200 dark:border-rose-900/60" : "border-amber-200 dark:border-amber-900/60";
+            const classeFundo = isCritico ? "bg-rose-50 dark:bg-rose-950/20" : "bg-amber-50 dark:bg-amber-950/20";
+            const classeTexto = isCritico ? "text-rose-700 dark:text-rose-400" : "text-amber-700 dark:text-amber-400";
+            const classeSubBorda = isCritico ? "border-rose-100 dark:border-rose-900/40" : "border-amber-100 dark:border-amber-900/40";
 
             htmlErros += `
-                <div class="border ${classeBorda} ${classeFundo} rounded-lg p-4 space-y-3">
+                <div class="border ${classeBorda} ${classeFundo} rounded-lg p-4 space-y-3 shadow-sm transition-all">
                     <div class="flex justify-between items-center border-b ${classeSubBorda} pb-1.5">
                         <div class="flex items-center gap-2 font-mono text-xs font-bold ${classeTexto}">
                             <span>⚠️ [${erro.gravidade}]</span>
                             <span>ANOMALIA NO PARÂMETRO: ${erro.parametro.toUpperCase()}</span>
                         </div>
-                        <span class="font-mono text-xs text-slate-400">LIDO: ${erro.valor}${erro.unidade} (LIMITE: ${erro.limite}${erro.unidade})</span>
+                        <span class="font-mono text-xs text-slate-500 dark:text-slate-400">LIDO: ${erro.valor}${erro.unidade} (LIMITE: ${erro.limite}${erro.unidade})</span>
                     </div>
                     
                     <div>
-                        <span class="text-[10px] font-mono tracking-wider text-slate-400 block uppercase">Cenário Clínico / Impacto Técnico:</span>
-                        <p class="text-xs text-slate-200 mt-0.5 leading-relaxed font-sans">${erro.mensagem}</p>
+                        <span class="text-[10px] font-mono tracking-wider text-slate-400 dark:text-slate-500 block uppercase">Cenário Clínico / Impacto Técnico:</span>
+                        <p class="text-xs text-slate-700 dark:text-slate-200 mt-0.5 leading-relaxed font-sans">${erro.mensagem}</p>
                     </div>
 
-                    <div class="bg-slate-950/60 p-2.5 rounded border border-slate-900">
-                        <span class="text-[10px] font-mono tracking-wider text-sky-400 block uppercase">💡 Protocolo de Mitigação Imediata:</span>
-                        <ul class="text-xs text-slate-300 mt-1 space-y-1 font-mono">
+                    <div class="bg-white/80 dark:bg-slate-950/60 p-2.5 rounded border border-slate-200 dark:border-slate-900">
+                        <span class="text-[10px] font-mono tracking-wider text-sky-600 dark:text-sky-400 block uppercase">💡 Protocolo de Mitigação Imediata:</span>
+                        <ul class="text-xs text-slate-600 dark:text-slate-300 mt-1 space-y-1 font-mono">
                             ${gerarScriptMitigacaoOperacional(erro.parametro)}
                         </ul>
                     </div>
