@@ -64,7 +64,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     document.getElementById('txtSignal').innerText = `${t.sinalRede || dadosBanco.signal || '--'} dBm`;
     document.getElementById('txtTimestamp').innerText = `⏱️ ATUALIZADO EM: ${new Date(relatorio.carimbotempo || dadosBanco.created_at).toLocaleTimeString('pt-BR')}`;
 
-    // Valores dos Cards Principais (Padrão de Cores Nativo de Cada Tema Restaurado)
+    // Valores dos Cards Principais
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">°C</span>`;
     document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">%</span>`;
     
@@ -72,7 +72,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const valorCO2fleshy = v.co2 || dadosBanco.co2 || '----';
     document.getElementById('valCO2').innerHTML = `<span class="text-slate-900 dark:text-white font-black text-3xl sm:text-4xl">${valorCO2fleshy}</span> <span class="text-base font-light opacity-40">PPM</span>`;
     
-    // Ponto de Orvalho limpo e sem elementos obstrutivos internos
+    // Ponto de Orvalho limpo e sem elementos/avisos extras dentro do card
     const elOrvalho = document.getElementById('valPontoOrvalho');
     if (elOrvalho) {
         const valorOrvalho = relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-';
@@ -105,7 +105,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const statusC25  = avaliarAnomaliaParticula(m40, q40, "BOM", 40);
     const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual.nc100, 50);
 
-    // Lógica Semafórica dos Cards Principais (Muda apenas a borda e o badge inferior)
+    // Lógica Semafórica dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
     pintarCard('cardCO2', 'statusCO2', relatorio.analiseIndividual.co2);
@@ -146,7 +146,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         `;
 
         if (relatorio.violacoes && relatorio.violacoes.length > 0) {
-            // [MUDANÇA ESSENCIAL]: Se a umidade estiver em atenção ou crítico, injetamos o Ponto de Orvalho na Triagem
+            // Se houver desvio de umidade, injetamos dinamicamente o risco de condensação do Ponto de Orvalho na Triagem
             const possuiDesvioUmidade = relatorio.violacoes.some(e => e.parametro === "Umidade");
             const jaPossuiOrvalho = relatorio.violacoes.some(e => e.parametro === "PontoOrvalho");
             
@@ -250,12 +250,16 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
                 </div>
 
-                <div class="bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 p-3 rounded-xl">
-                    <p class="text-xs sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                        <span class="font-bold text-slate-900 dark:text-white">💡 Entendimento Prático:</span> 
-                        A <span class="underline decoration-emerald-500 decoration-2">Massa</span> indica a concentração acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
-                    </p>
-                </div>
+                <div class="bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 p-3 rounded-xl space-y-2.5">
+    <p class="text-xs sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+        <span class="font-bold text-slate-900 dark:text-white">💡 Entendimento Prático (Partículas):</span> 
+        A <span class="underline decoration-emerald-500 decoration-2">Massa</span> indica a concentração acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
+    </p>
+    <p class="text-xs sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed border-t border-slate-200 dark:border-slate-800/60 pt-2">
+        <span class="font-bold text-slate-900 dark:text-white">🌡️ O que é e como ocorre o Ponto de Orvalho?</span> 
+        É a temperatura exata na qual o ar atinge a sua saturação máxima de umidade (100% de Umidade Relativa). Fisicamente, ocorre quando o ar quente do ambiente—que carrega vapor de água invisível—entra em contato com qualquer superfície ou massa de ar que esteja igual ou abaixo dessa temperatura limite. Ao esfriar repentinamente, o ar perde a capacidade de reter a água em estado gasoso, forçando o vapor a se condensar e se transformar em água líquida (orvalho).
+    </p>
+</div>
             </div>
         `;
     }
@@ -292,6 +296,10 @@ function obterNomeTraduzido(param) {
         "PM2.5": "Massa de Partículas Finas Inaláveis (PM2.5)",
         "PM4.0": "Massa de Material Particulado Isocinético (PM4.0)",
         "PM10": "Concentração Gravimétrica Total (PM10)",
+        "NC0.5": "Contagem de Bioaerossóis",
+        "NC1.0": "Contagem de Frações de Queima",
+        "NC2.5": "Contagem de Particulado Fino Interior",
+        "NC10.0": "Contagem de Alérgenos e Macrofrações",
         "Temperatura": "Temperatura Operacional Local",
         "Umidade": "Umidade Relativa do Ar Interior",
         "PontoOrvalho": "Perigo de Condensação (Ponto de Orvalho)"
@@ -301,20 +309,40 @@ function obterNomeTraduzido(param) {
 
 function obterMensagemAnvisa(param, valor) {
     const mensagens = {
-        "CO2": `⚠️ Renovação do ar inadequada. Concentração de CO₂ excedendo a meta estipulada de 1000 PPM.`,
-        "Temperatura": `🌡️ Temperatura fora da faixa de conforto térmico recomendada pela ANVISA (20°C a 24°C).`,
-        "Umidade": `💧 Desvio higrométrico: Umidade fora da banda ideal de conformidade (40% a 65%).`,
-        "PontoOrvalho": `🚨 Risco iminente de saturação: A alta umidade indica que o ar pode condensar em superfícies frias, gerando gotículas de água que estragam eletroeletrônicos e causam mofo.`
+        "CO2": `⚠️ Renovação do ar inadequada. Concentração de CO₂ excedendo a meta estipulada de 1000 PPM, gerando saturação antropogênica corporativa.`,
+        "CO": `🚨 Condição crítica: presença de Monóxido de Carbono (CO) acima dos limiares higiênicos, indicando contaminação ou refluxo de gases externos.`,
+        "VOC": `⚠️ Concentração de Compostos Orgânicos Voláteis superior às taxas recomendadas pela NBR 17037 para ambientes climatizados artificiais.`,
+        "PM1.0": `🚨 Bioaerossóis em patamares instáveis. Alta concentração de micropartículas finas com capacidade de retenção suspensa.`,
+        "PM2.5": `🚨 Material particulado fino inalável acima dos limites higiênicos ideais de pureza e filtragem ambiental.`,
+        "PM4.0": `🌬️ Concentração de poeira e aerodispersoides em elevação na zona respiratória dos ocupantes.`,
+        "PM10": `🍂 Nível de particulado total em suspensão (PM10) inadequado, favorecendo o transporte de alérgenos e ácaros no recinto.`,
+        "NC0.5": `🚨 Densidade de contagem microscópica elevada, superando a taxa de atenuação passiva do fluxo de ar local.`,
+        "NC1.0": `🚨 Contagem de micropartículas na curva de fumaça ou queima acima das taxas aceitáveis de pureza interna.`,
+        "NC2.5": `⚠️ Distribuição de micropartículas finas dispersas extrapolando as faixas ideais de controle isocinético.`,
+        "NC10.0": `🍂 Quantidade excessiva de macropartículas em suspensão atuando diretamente como agentes de estresse alérgico respiratório.`,
+        "Temperatura": `🌡️ Temperatura fora da faixa operacional estipulada pela ANVISA (20°C a 24°C para ciclo de verão), prejudicando o bem-estar e o rendimento térmico.`,
+        "Umidade": `💧 Desvio higrométrico: Umidade relativa fora da banda ideal (40% a 65%), impactando as condições de conforto ambiental e facilitando proliferações microbiológicas.`,
+        "PontoOrvalho": `🚨 Perigo de Condensação: A alta umidade indica que o ar pode condensar em superfícies frias, gerando gotículas de água que estragam eletroeletrônicos, mofo e fungos.`
     };
-    return mensagens[param] || "Parâmetro ambiental em desconformidade amostral mecânica.";
+    return mensagens[param] || "Parâmetro ambiental em inconformidade com os padrões de amostragem da NBR 17037.";
 }
 
 function obterMitigacaoAnvisa(param) {
     const acoes = {
-        "CO2": "Incremente o volume de captação de ar externo do ambiente ou force aberturas localizadas em janelas.",
-        "Temperatura": "Ajuste o termostato para estabilizar a temperatura operacional rigorosamente entre 20°C e 24°C.",
-        "Umidade": "Ative os estágios mecânicos de desumidificação do sistema ou verifique se há infiltrações externas.",
+        "CO2": "Incremente imediatamente o volume de ar externo captado através do sistema mecânico ou realize aberturas localizadas de janelas para forçar a renovação do ar e diluição do CO₂.",
+        "CO": "PROTOCOLO DE EMERGÊNCIA: Evacue a área técnica imediatamente, locate a fonte de combustão ou refluxo e isole as tomadas de ar externas contaminadas.",
+        "VOC": "Suspenda imediatamente o uso de saneantes químicos, tintas ou sprays, e opere a renovação forçada em vazão máxima para exaustão dos precursores voláteis.",
+        "PM1.0": "Ative os purificadores auxiliares e certifique-se da estanqueidade e integridade operacional dos filtros de classe absoluta dispostos no fancoil.",
+        "PM2.5": "Avalie se há infiltração de ar externo sem filtragem prévia; mantenha barreiras físicas limpas e opere o sistema em modo de filtragem de alta eficiência.",
+        "PM4.0": "Providencie limpeza corretiva de superfícies por método úmido (vedando varrição a seco) para mitigar a ressuscitação do material particulado.",
+        "PM10": "Verifique o estado de colmatação dos pré-filtros (filtros grossos G4) do condicionador de ar e providencie substituição ou higienização imediata.",
+        "NC0.5": "Eleve a velocidade dos ciclos de filtragem e mantenha a taxa de recirculação passando continuamente pela barreira HEPA.",
+        "NC1.0": "Mitigue as fontes internas de emanação de fumaça e isole os acessos periféricos se houver focos externos de queimada.",
+        "NC2.5": "Execute o plano de manutenção e higienização programada dos dutos e caixas de mistura do ambiente climatizado.",
+        "NC10.0": "Restrinja a abertura de vãos externos se houver arraste de pólen urbano e assegure a limpeza imediata das grelhas de retorno.",
+        "Temperatura": "Ajuste o setpoint do termostato central para realinhar a temperatura operacional à faixa mandatória da ANVISA, mantendo o ambiente estritamente entre 20°C e 24°C.",
+        "Umidade": "Se a umidade estiver excessiva, ative os estágios de desumidificação do sistema de refrigeração; se estiver abaixo de 40%, acione os umidificadores de linha.",
         "PontoOrvalho": "Ative imediatamente a função de desumidificação do sistema de climatização ou ligue um desumidificador mecânico no recinto para conter a umidade."
     };
-    return acoes[param] || "Consulte o técnico responsável pelo PMOC do edifício.";
+    return acoes[param] || "Acione a equipe de manutenção predial para verificação do PMOC (Plano de Manutenção, Operação e Controle).";
 }
