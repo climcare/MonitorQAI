@@ -88,27 +88,27 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const q100 = contagem.nc10_0 ? contagem.nc10_0 : (dadosBanco.nc10_0 ? Number(dadosBanco.nc10_0) : 0);
 
     // =========================================================================
-    // MOTORES DE CORRELAÇÃO INTEGRADA (CRITÉRIOS HIGIÊNICOS ANVISA / NBR 17037)
+    // MOTORES DE CORRELAÇÃO INTEGRADA - EQUALIZADO COM NORMAS_QAI DO ANALYSIS
     // =========================================================================
-    const avaliarAnomaliaParticula = (massa, contagem, limiteMassaCritico, limiteContagemAlerta) => {
+    const avaliarAnomaliaParticula = (massa, contagem, statusIndividualContagem, limiteMassaCritico) => {
         if (!massa && !contagem) return "BOM";
         
-        // Se passar do teto absoluto, é Crítico
-        if (massa > limiteMassaCritico || contagem > (limiteContagemAlerta * 1.3)) {
+        // Se a contagem disparou CRÍTICO ou ALERTA no analysis, o card acompanha imediatamente
+        if (statusIndividualContagem === "CRÍTICO" || massa > limiteMassaCritico) {
             return "CRITICO";
         }
-        // Sincronizado com a barra lateral: se passar do limite de atenção, ativa o ALERTA
-        if (massa > (limiteMassaCritico * 0.5) || contagem > limiteContagemAlerta) {
+        if (statusIndividualContagem === "ALERTA" || massa > (limiteMassaCritico * 0.5)) {
             return "ALERTA";
         }
         return "BOM";
     };
 
-    // Ajuste fino dos gatilhos de contagem para espelhar perfeitamente a barra lateral
-    const statusC05  = avaliarAnomaliaParticula(m10, q10, 25, 80);   // Vírus e Bactérias (Bioaerossóis)
-    const statusC10  = avaliarAnomaliaParticula(m25, q25, 25, 90);   // Aerossóis e Fumaças
-    const statusC25  = avaliarAnomaliaParticula(m40, q40, 40, 90);   // Poeira Inalável Fina
-    const statusC100 = avaliarAnomaliaParticula(m100, q100, 50, 90); // Particulado Macroscópico (Pólen acende com >90)
+    // Ajuste fino mapeando diretamente os status validados de cada faixa do modulo semafórico do analysis
+    const statusC05  = avaliarAnomaliaParticula(m10, q10, relatorio.analiseIndividual.nc05, 25);   // Vírus e Bactérias
+    const statusC10  = avaliarAnomaliaParticula(m25, q25, relatorio.analiseIndividual.nc10, 15);   // Aerossóis e Fumaças (Alinhado a PM2.5 max: 15)
+    const statusC25  = avaliarAnomaliaParticula(m40, q40, "BOM", 40);                              // Poeira Inalável Fina
+    const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual.nc100, 50); // Particulado Macroscópico (Pólen alinhado a PM10 max: 50)
+
     // Lógica Semafórica dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
@@ -125,7 +125,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         else bannerInfo.classList.add('hidden');
     }
 
-    // Status Geral Semafórico Superior (Ajustado para forçar a visibilidade do texto)
+    // Status Geral Semafórico Superior
     const panelStatus = document.getElementById('panelStatusGeral');
     const txtStatus = document.getElementById('txtStatusGeral');
     
@@ -182,7 +182,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     }
 
     // =========================================================================
-    // 3. FUSÃO COMPLETA: SEÇÃO UNIFICADA DE PESO E QUANTIDADE DE PARTÍCULAS
+    // 3. SEÇÃO UNIFICADA DE PESO E QUANTIDADE DE PARTÍCULAS
     // =========================================================================
     const quadroCorrelacao = document.getElementById('panelTriagemMassaQuantidade');
     if (quadroCorrelacao) {
@@ -245,7 +245,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
 
                 </div>
-                <p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto ($pt/cm^3$) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
+                <p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
             </div>
         `;
     }
