@@ -3,13 +3,18 @@
 // ====================================================================
 const NORMAS_QAI = {
     gases: {
-        co2: { max: 1000 },    // ppm - Renovação do ar
-        co: { max: 9.0 },      // ppm - Toxicidade imediata
-        vocIndex: { max: 300 } // Índice - Carga química volátil
+        co2: { max: 1000 },    // ppm - Renovação do ar (Gás Carbônico)
+        co: { max: 9.0 },      // ppm - Toxicidade imediata (Monóxido de Carbono)
+        vocIndex: { max: 300 } // Índice - Carga química volátil (TVOC)
     },
     particulados: {
         pm25: { max: 15.0 },   // µg/m³ - Partículas finas respiráveis (OMS)
         pm10: { max: 50.0 }    // µg/m³ - Partículas grossas
+    },
+    contagem: {
+        nc0_5: { max: 100 },   // pt/cm³ - Alerta para Carga Viral/Bacteriana (Vírus e Bactérias)
+        nc1_0: { max: 150 },   // pt/cm³ - Alerta para Fumaça/Aerossóis (Fumaça e Fuligem)
+        nc10_0: { max: 50 }    // pt/cm³ - Alerta para Alérgenos Grandes (Poeira, Ácaros e Pólen)
     },
     conforto: {
         temperature: { min: 20.0, max: 24.0 }, // °C - Faixa operacional padrão
@@ -42,92 +47,95 @@ function analisarLeituraQAI(leitura) {
         statusGeral: "CONFORME", 
         pontoOrvalho: 0,
         violacoes: [],
+        valoresAtuais: {},
         telemetriaAvancada: {}
     };
 
-    if (leitura.temperature && leitura.humidity) {
-        diagnostico.pontoOrvalho = calcularPontoOrvalho(leitura.temperature, leitura.humidity);
+    const temp = leitura.temperature;
+    const hum = leitura.humidity;
+
+    if (temp && hum) {
+        diagnostico.pontoOrvalho = calcularPontoOrvalho(temp, hum);
     }
 
-    // Validações - Gases
+    // ==========================================
+    // 1. VALIDAÇÕES - GASES (PRESURVADO DO SEU ORIGINAL)
+    // ==========================================
     if (leitura.co2 > NORMAS_QAI.gases.co2.max) {
         diagnostico.violacoes.push({
-            parametro: "CO2",
-            valor: leitura.co2,
-            limite: NORMAS_QAI.gases.co2.max,
-            unidade: "ppm",
-            gravidade: "ATENÇÃO",
+            parametro: "CO2", valor: leitura.co2, limite: NORMAS_QAI.gases.co2.max, unidade: "ppm", gravidade: "ATENÇÃO",
             mensagem: "Taxa de renovação de ar insuficiente. Alta concentração de bioefluentes humanos no ambiente."
         });
     }
 
     if (leitura.co > NORMAS_QAI.gases.co.max) {
         diagnostico.violacoes.push({
-            parametro: "CO",
-            valor: leitura.co,
-            limite: NORMAS_QAI.gases.co.max,
-            unidade: "ppm",
-            gravidade: "CRÍTICO",
+            parametro: "CO", valor: leitura.co, limite: NORMAS_QAI.gases.co.max, unidade: "ppm", gravidade: "CRÍTICO",
             mensagem: "Monóxido de Carbono acima do limite de segurança. Risco severo de asfixia química e toxicidade arterial."
         });
     }
 
     if (leitura.vocIndex > NORMAS_QAI.gases.vocIndex.max) {
         diagnostico.violacoes.push({
-            parametro: "VOC",
-            valor: leitura.vocIndex,
-            limite: NORMAS_QAI.gases.vocIndex.max,
-            unidade: "",
-            gravidade: "ATENÇÃO",
+            parametro: "VOC", valor: leitura.vocIndex, limite: NORMAS_QAI.gases.vocIndex.max, unidade: "", gravidade: "ATENÇÃO",
             mensagem: "Concentração elevada de Compostos Orgânicos Voláteis. Indício de saturação por produtos de limpeza ou solventes."
         });
     }
 
-    // Validações - Particulados (Massa)
+    // ==========================================
+    // 2. VALIDAÇÕES - MASSA (PRESERVADO DO SEU ORIGINAL)
+    // ==========================================
     if (leitura.pm25 > NORMAS_QAI.particulados.pm25.max) {
         diagnostico.violacoes.push({
-            parametro: "PM2.5",
-            valor: leitura.pm25,
-            limite: NORMAS_QAI.particulados.pm25.max,
-            unidade: "µg/m³",
-            gravidade: "CRÍTICO",
+            parametro: "PM2.5", valor: leitura.pm25, limite: NORMAS_QAI.particulados.pm25.max, unidade: "µg/m³", gravidade: "CRÍTICO",
             mensagem: "Partículas ultrafinas em nível perigoso. Risco de transporte de patógenos e saturação de vias respiratórias."
         });
     }
 
     if (leitura.pm10 > NORMAS_QAI.particulados.pm10.max) {
         diagnostico.violacoes.push({
-            parametro: "PM10",
-            valor: leitura.pm10,
-            limite: NORMAS_QAI.particulados.pm10.max,
-            unidade: "µg/m³",
-            gravidade: "ATENÇÃO",
+            parametro: "PM10", valor: leitura.pm10, limite: NORMAS_QAI.particulados.pm10.max, unidade: "µg/m³", gravidade: "ATENÇÃO",
             mensagem: "Partículas grossas em suspensão acima do limite normativo de purificação mecânica diária."
         });
     }
 
-    // Validações - Conforto e Segurança Biológica
-    const temp = leitura.temperature;
-    const hum = leitura.humidity;
+    // ==========================================
+    // 3. VALIDAÇÕES CLÍNICAS - QUANTIDADE DE MICRO-PARTÍCULAS (NOVO)
+    // ==========================================
+    if (leitura.nc0_5 > NORMAS_QAI.contagem.nc0_5.max) {
+        diagnostico.violacoes.push({
+            parametro: "NC0.5", valor: leitura.nc0_5?.toFixed(0), limite: NORMAS_QAI.contagem.nc0_5.max, unidade: " pt/cm³", gravidade: "CRÍTICO",
+            mensagem: "Altíssima quantidade de micropartículas compatíveis com tamanho de vírus e bactérias em suspensão aeroespacial."
+        });
+    }
 
+    if (leitura.nc1_0 > NORMAS_QAI.contagem.nc1_0.max) {
+        diagnostico.violacoes.push({
+            parametro: "NC1.0", valor: leitura.nc1_0?.toFixed(0), limite: NORMAS_QAI.contagem.nc1_0.max, unidade: " pt/cm³", gravidade: "ATENÇÃO",
+            mensagem: "Densidade excessiva de partículas com o perfil molecular de fumaça, fuligem industrial ou aerosóis secos."
+        });
+    }
+
+    if (leitura.nc10_0 > NORMAS_QAI.contagem.nc10_0.max) {
+        diagnostico.violacoes.push({
+            parametro: "NC10.0", valor: leitura.nc10_0?.toFixed(0), limite: NORMAS_QAI.contagem.nc10_0.max, unidade: " pt/cm³", gravidade: "ATENÇÃO",
+            mensagem: "Presença física massiva de alérgenos pesados como fezes de ácaros domésticos, esporos de mofo ou grãos de pólen."
+        });
+    }
+
+    // ==========================================
+    // 4. VALIDAÇÕES - CONFORTO (PRESERVADO DO SEU ORIGINAL)
+    // ==========================================
     if (temp < NORMAS_QAI.conforto.temperature.min || temp > NORMAS_QAI.conforto.temperature.max) {
         diagnostico.violacoes.push({
-            parametro: "Temperatura",
-            valor: temp,
-            limite: `${NORMAS_QAI.conforto.temperature.min}-${NORMAS_QAI.conforto.temperature.max}`,
-            unidade: "°C",
-            gravidade: "ATENÇÃO",
+            parametro: "Temperatura", valor: temp, limite: `${NORMAS_QAI.conforto.temperature.min}-${NORMAS_QAI.conforto.temperature.max}`, unidade: "°C", gravidade: "ATENÇÃO",
             mensagem: "Gradiente térmico fora da faixa operacional recomendada para estabilidade metabólica e conforto."
         });
     }
 
     if (hum < NORMAS_QAI.conforto.humidity.min || hum > NORMAS_QAI.conforto.humidity.max) {
         diagnostico.violacoes.push({
-            parametro: "Umidade",
-            valor: hum,
-            limite: `${NORMAS_QAI.conforto.humidity.min}-${NORMAS_QAI.conforto.humidity.max}`,
-            unidade: "%",
-            gravidade: "ATENÇÃO",
+            parametro: "Umidade", valor: hum, limite: `${NORMAS_QAI.conforto.humidity.min}-${NORMAS_QAI.conforto.humidity.max}`, unidade: "%", gravidade: "ATENÇÃO",
             mensagem: "Umidade relativa inadequada. Níveis altos aceleram mofo/fungos; níveis baixos ressecam mucosas protetoras."
         });
     }
@@ -144,7 +152,7 @@ function analisarLeituraQAI(leitura) {
         diagnostico.statusGeral = "ATENÇÃO";
     }
 
-    // Mapeamento dos Valores Atuais Estáveis
+    // Mapeamento Integral dos Valores Estáveis (Sem perder nenhuma variável)
     diagnostico.valoresAtuais = {
         temperature: leitura.temperature,
         humidity: leitura.humidity,
@@ -155,7 +163,7 @@ function analisarLeituraQAI(leitura) {
         pm10: leitura.pm10
     };
 
-    // Estruturação da Telemetria Avançada para Engenharia
+    // Estruturação da Telemetria Avançada Completa para Engenharia
     diagnostico.telemetriaAvancada = {
         contagemParticulas: {
             nc0_5: leitura.nc0_5,
@@ -169,17 +177,15 @@ function analisarLeituraQAI(leitura) {
     };
 
     // ====================================================================
-    // MÓDULO: ANÁLISE INDIVIDUAL PARA OS CARDS SEMAFÓRICOS
+    // MÓDULO SEMAFÓRICO: INCLUINDO AS REGRAS BIOLÓGICAS DAS NOVAS FAIXAS
     // ====================================================================
     diagnostico.analiseIndividual = {
-        // Regra da Temperatura: Dentro da meta = BOM. Acima de 26°C = CRÍTICO. Fora disso = ALERTA.
         temperatura: (temp >= NORMAS_QAI.conforto.temperature.min && temp <= NORMAS_QAI.conforto.temperature.max) ? "BOM" : (temp > 26) ? "CRÍTICO" : "ALERTA",
-        
-        // Regra da Umidade: Dentro da meta = BOM. Fora = ALERTA.
         umidade: (hum >= NORMAS_QAI.conforto.humidity.min && hum <= NORMAS_QAI.conforto.humidity.max) ? "BOM" : "ALERTA",
-        
-        // Regra do CO2: Até 800 PPM = BOM. Acima de 1000 = CRÍTICO. Entre eles = ALERTA.
-        co2: (leitura.co2 <= 800) ? "BOM" : (leitura.co2 > NORMAS_QAI.gases.co2.max) ? "CRÍTICO" : "ALERTA"
+        co2: (leitura.co2 <= 800) ? "BOM" : (leitura.co2 > NORMAS_QAI.gases.co2.max) ? "CRÍTICO" : "ALERTA",
+        nc05: (leitura.nc0_5 <= NORMAS_QAI.contagem.nc0_5.max) ? "BOM" : "CRÍTICO",
+        nc10: (leitura.nc1_0 <= NORMAS_QAI.contagem.nc1_0.max) ? "BOM" : "ALERTA",
+        nc100: (leitura.nc10_0 <= NORMAS_QAI.contagem.nc10_0.max) ? "BOM" : "ALERTA"
     };
 
     return diagnostico;
