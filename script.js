@@ -79,7 +79,7 @@ function atualizarInterfaceVisual(relatorio) {
     // =========================================================================
     
     // 1. Massa Viral / Partículas Ultrafinas (PM 1.0)
-    const m10 = v["PM1.0"] || v.pm10 || v.pm1_0;
+    const m10 = v["PM1.0"] || v.pm1.0 || v.pm1_0;
     document.getElementById('valNC05').innerHTML = m10 ? `${Number(m10).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
     // 2. Massa de Fumaça e Vapores (PM 2.5)
