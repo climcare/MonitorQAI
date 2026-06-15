@@ -144,10 +144,9 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         // Geração dos Accordions na Lateral Direita
         let htmlAlertas = `
             <div class="bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-300/10 rounded-2xl p-3 space-y-2.5">
-                <h3 class="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
+                <h3 class="text-[11px] font-black uppercase text-slate-500 dark:text-slate-500 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
         `;
 
-        // Injeta dinamicamente o Ponto de Orvalho nas violações se a Umidade estiver instável
         if (relatorio.violacoes && relatorio.violacoes.length > 0) {
             const possuiDesvioUmidade = relatorio.violacoes.some(e => e.parametro === "Umidade");
             if (possuiDesvioUmidade) {
@@ -169,7 +168,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                             <summary class="flex justify-between items-center cursor-pointer list-none focus:outline-none">
                                 <div class="space-y-0.5">
                                     <p class="text-[11px] font-black ${corTexto} uppercase tracking-tight">⚠️ ${obterNomeTraduzido(erro.parametro)}</p>
-                                    <p class="text-[10px] text-slate-400 font-mono">Atual: ${erro.valor}${erro.unidade}</p>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Atual: ${erro.valor}${erro.unidade}</p>
                                 </div>
                                 <span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded font-bold text-slate-500 dark:text-slate-400 group-open:hidden">👉 Solução</span>
                                 <span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded font-bold text-slate-600 dark:text-slate-300 hidden group-open:inline">▲ Ocultar</span>
@@ -191,7 +190,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     }
 
     // =========================================================================
-    // 3. SEÇÃO UNIFICADA DE PESO E QUANTIDADE DE PARTÍCULAS
+    // 3. SEÇÃO UNIFICADA DE PESO E QUANTIDADE DE PARTÍCULAS (CORES DINÂMICAS)
     // =========================================================================
     const quadroCorrelacao = document.getElementById('panelTriagemMassaQuantidade');
     if (quadroCorrelacao) {
@@ -199,15 +198,15 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         const tamanhoTipicoFormatado = `${Number(tpsRaw).toFixed(2)} µm`;
 
         const obterClasseCor = (status) => {
-            if (status === "ALERTA") return "text-amber-500";
-            if (status === "CRITICO") return "text-rose-500";
-            return "text-emerald-500";
+            if (status === "ALERTA") return "text-amber-500 dark:text-amber-400";
+            if (status === "CRITICO") return "text-rose-500 dark:text-rose-400";
+            return "text-emerald-500 dark:text-emerald-400";
         };
 
         const obterClasseBorda = (status) => {
             if (status === "ALERTA") return "border-amber-500/70 bg-amber-500/5 dark:bg-amber-500/[0.02]";
             if (status === "CRITICO") return "border-rose-500 bg-rose-500/5 dark:bg-rose-500/[0.02] animate-pulse shadow-md shadow-rose-500/10";
-            return "border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/50";
+            return "border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/50";
         };
 
         quadroCorrelacao.innerHTML = `
@@ -222,39 +221,39 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC05)}">
-                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Bioaerossóis flutuantes<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Indicadores microscópicos leves)</span></p>
+                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Bioaerossóis flutuantes<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Indicadores microscópicos leves)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC10)}">
-                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Aerossóis e Fumaças<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Combustões e Frações Finas)</span></p>
+                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Aerossóis e Fumaças<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Combustões e Frações Finas)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC25)}">
-                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Poeira Inalável Fina<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Sedimentáveis e Suspensões)</span></p>
+                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Poeira Inalável Fina<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Sedimentáveis e Suspensões)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC100)}">
-                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Particulado Macroscópico<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Alérgenos e Frações Grossas)</span></p>
+                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Particulado Macroscópico<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Alérgenos e Frações Grossas)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                 </div>
-                <p class="text-[10px] text-white font-semibold italic text-center block mt-1 bg-slate-900/40 p-2 rounded-lg">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
+                <p class="text-[10px] text-slate-800 dark:text-white font-semibold italic text-center block mt-1 bg-slate-200/50 dark:bg-slate-900/40 p-2 rounded-lg">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
             </div>
         `;
     }
@@ -309,7 +308,7 @@ function obterMensagemAnvisa(param, valor) {
         "VOC": `⚠️ Concentração de Compostos Orgânicos Voláteis superior às taxas recomendadas pela NBR 17037 para ambientes climatizados artificiais.`,
         "PM1.0": `🚨 Bioaerossóis em patamares instáveis. Alta concentração de micropartículas finas com capacidade de retenção suspensa.`,
         "PM2.5": `🚨 Material particulado fino inalável acima dos limites higiênicos ideais de pureza e filtragem ambiental.`,
-        "PM4.0": `🌬️ Concentração de poeira e aerodispersoides em elevação na zona respiratória dos ocupantes.`,
+        "PM4.0": `🌬️ Concentração de poeira e aerodispersoides em eleベーション na zona respiratória dos ocupantes.`,
         "PM10": `🍂 Nível de particulado total em suspensão (PM10) inadequado, favorecendo o transporte de alérgenos e ácaros no recinto.`,
         "NC0.5": `🚨 Densidade de contagem microscópica elevada, superando a taxa de atenuação passiva do fluxo de ar local.`,
         "NC1.0": `🚨 Contagem de micropartículas na curva de fumaça ou queima acima das taxas aceitáveis de pureza interna.`,
