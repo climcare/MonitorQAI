@@ -68,15 +68,17 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">°C</span>`;
     document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">%</span>`;
     
-    // [CORREÇÃO CO2]: Aplicando as cores semafóricas dinamicamente ao valor do texto do CO2
+    // [CORREÇÃO CO2]: Aplicando as cores semafóricas dinamicamente ao valor do texto do CO2 com excelente contraste
     const statusCO2Atual = relatorio.analiseIndividual.co2;
-    const classeCorCO2 = statusCO2Atual === "BOM" ? "text-emerald-500 dark:text-emerald-400" : 
-                         statusCO2Atual === "ALERTA" ? "text-amber-500 dark:text-amber-400" : 
-                         "text-rose-500 dark:text-rose-400";
+    const classeCorCO2 = statusCO2Atual === "BOM" 
+    ? "text-emerald-700 dark:text-emerald-400" 
+    : statusCO2Atual === "ALERTA" 
+    ? "text-amber-700 dark:text-amber-400" 
+    : "text-rose-700 dark:text-rose-400";
 
     document.getElementById('valCO2').innerHTML = `<span class="${classeCorCO2} font-black">${v.co2 || dadosBanco.co2 || '----'}</span> <span class="text-base font-light opacity-40">PPM</span>`;
     
-    // [MELHORIA PONTO DE ORVALHO]: Inserindo informação de perigo de condensação condicional
+    // [MELHORIA PONTO DE ORVALHO]: Inserindo informação de perigo de condensação condicional e mini-card educativo fixo
     const elOrvalho = document.getElementById('valPontoOrvalho');
     if (elOrvalho) {
         const valorOrvalho = relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-';
@@ -88,11 +90,22 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         }
 
         elOrvalho.innerHTML = `
-            <div class="flex flex-col items-center justify-center">
-                <div>
+            <div class="flex flex-col items-center justify-center w-full">
+                <div class="mb-1">
                     <span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">${valorOrvalho}</span><span class="text-xl font-light opacity-40">°C</span>
                 </div>
+                
                 ${alertaCondensacao}
+
+                <div class="mt-3 w-full text-left rounded-xl border border-slate-200/80 bg-slate-50 p-2.5 text-[11px] leading-normal text-slate-600 dark:border-slate-700/60 dark:bg-slate-800/40 dark:text-slate-300">
+                    <div class="flex items-center gap-1 font-bold text-slate-800 dark:text-slate-200 mb-1">
+                        <span class="text-amber-500 text-xs">💡</span>
+                        <span>Entenda este Indicador</span>
+                    </div>
+                    <p class="font-normal opacity-90">
+                        É a temperatura limite em que o ar "sua". Se as superfícies do ambiente esfriarem até este número, a umidade vira água líquida (igual a um copo de bebida gelada). Monitorar isso evita paredes molhadas, protegendo eletroeletrônicos e prevenindo o mofo.
+                    </p>
+                </div>
             </div>
         `;
     }
@@ -411,7 +424,7 @@ function obterMitigacaoAnvisa(param) {
         "NC10.0": "Restrinja a abertura de vãos externos se houver arraste de pólen urbano e assegure a limpeza imediata das grelhas de retorno.",
         "Temperatura": "Ajuste o setpoint do termostato central para realinhar a temperatura operacional à faixa mandatória da ANVISA, mantendo o ambiente estritamente entre 20°C e 24°C.",
         "Umidade": "Se a umidade estiver excessiva, ative os estágios de desumidificação do sistema de refrigeração; se estiver abaixo de 40%, acione os umidificadores de linha.",
-        "PontoOrvalho": "Ative a função de desumidificação do ar-condicionado, ligue um desumidificador mecânico no recinto ou otimize o balanço de renovação de ar do espaço."
+        "PontoOrvalho": "Ative a função de desumidificação do ar-condicionado, ligue um desumidificador mecânico no recinto ou otimize o balanço de renovação de ar do space."
     };
     return acoes[param] || "Acione a equipe de manutenção predial para verificação do PMOC (Plano de Manutenção, Operação e Controle).";
 }
