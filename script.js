@@ -64,55 +64,19 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     document.getElementById('txtSignal').innerText = `${t.sinalRede || dadosBanco.signal || '--'} dBm`;
     document.getElementById('txtTimestamp').innerText = `⏱️ ATUALIZADO EM: ${new Date(relatorio.carimbotempo || dadosBanco.created_at).toLocaleTimeString('pt-BR')}`;
 
-    // Valores dos Cards Principais (Padrão Limpo de Volta)
+    // Valores dos Cards Principais (Padrão de Cores Nativo de Cada Tema Restaurado)
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">°C</span>`;
     document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">%</span>`;
     
-    // [CORREÇÃO FORÇADA DE CONTRASTE CO2]: Garantindo que a cor mude de verdade no número
-    const statusCO2Atual = relatorio.analiseIndividual.co2;
-    let corTextoCO2 = "text-emerald-600 dark:text-emerald-400"; // Bom
-    if (statusCO2Atual === "ALERTA") corTextoCO2 = "text-amber-600 dark:text-amber-400";
-    if (statusCO2Atual === "CRÍTICO") corTextoCO2 = "text-rose-600 dark:text-rose-400";
-
+    // CO2 mantendo estritamente a cor padrão do tema (Preto/Branco conforme ambiente)
     const valorCO2fleshy = v.co2 || dadosBanco.co2 || '----';
-    document.getElementById('valCO2').innerHTML = `<span class="${corTextoCO2} font-black text-3xl sm:text-4xl">${valorCO2fleshy}</span> <span class="text-base font-light opacity-40">PPM</span>`;
+    document.getElementById('valCO2').innerHTML = `<span class="text-slate-900 dark:text-white font-black text-3xl sm:text-4xl">${valorCO2fleshy}</span> <span class="text-base font-light opacity-40">PPM</span>`;
     
-    // [PONTO DE ORVALHO LIMPO]: Apenas o número e o alerta de condensação discreto
+    // Ponto de Orvalho limpo e sem elementos obstrutivos internos
     const elOrvalho = document.getElementById('valPontoOrvalho');
     if (elOrvalho) {
         const valorOrvalho = relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-';
-        const statusUmidade = relatorio.analiseIndividual.umidade;
-        
-        let alertaCondensacao = '';
-        if (statusUmidade === "ALERTA" || statusUmidade === "CRÍTICO") {
-            alertaCondensacao = `<div class="text-[10px] font-black text-rose-500 dark:text-rose-400 animate-pulse mt-1 uppercase tracking-tight">⚠️ PERIGO DE CONDENSAÇÃO</div>`;
-        }
-
-        elOrvalho.innerHTML = `
-            <span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">${valorOrvalho}</span><span class="text-xl font-light opacity-40">°C</span>
-            ${alertaCondensacao}
-        `;
-    }
-
-    // [NOVA LOCALIZAÇÃO DO CARD INFORMATIVO]: Injeta logo abaixo da fileira de cards principais
-    const areaCards = document.getElementById('cardOrvalho')?.parentElement; 
-    if (areaCards) {
-        // Remove container antigo se já existir para não duplicar
-        const antigoContainer = document.getElementById('boxEducativoOrvalho');
-        if (antigoContainer) antigoContainer.remove();
-
-        // Cria o novo bloco horizontal elegante
-        const boxEducativo = document.createElement('div');
-        boxEducativo.id = 'boxEducativoOrvalho';
-        boxEducativo.className = 'w-full mt-4 bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 p-3 rounded-2xl transition-all';
-        boxEducativo.innerHTML = `
-            <p class="text-xs sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                <span class="font-bold text-slate-900 dark:text-white">💡 Entendimento Prático (Ponto de Orvalho):</span> 
-                É a temperatura limite em que o ar "sua". Se as superfícies do ambiente esfriarem até este número, a umidade vira água líquida (igual a um copo de bebida gelada). Monitorar isso evita paredes molhadas, protegendo eletroeletrônicos e prevenindo o mofo.
-            </p>
-        `;
-        // Insere logo após a fileira de cards (supondo que a estrutura HTML os agrupe)
-        areaCards.parentElement.appendChild(boxEducativo);
+        elOrvalho.innerHTML = `<span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">${valorOrvalho}</span><span class="text-xl font-light opacity-40">°C</span>`;
     }
 
     // Coleta dos dados brutos de Massa
@@ -141,7 +105,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const statusC25  = avaliarAnomaliaParticula(m40, q40, "BOM", 40);
     const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual.nc100, 50);
 
-    // Lógica Semafórica dos Cards Principais
+    // Lógica Semafórica dos Cards Principais (Muda apenas a borda e o badge inferior)
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
     pintarCard('cardCO2', 'statusCO2', relatorio.analiseIndividual.co2);
@@ -175,15 +139,18 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         txtStatus.className = "text-base font-black uppercase tracking-wider text-white";
         txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
-        // Geração dos Accordions na Lateral Direita
+        // Geração da Triagem Lateral Direita
         let htmlAlertas = `
             <div class="bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-300/10 rounded-2xl p-3 space-y-2.5">
                 <h3 class="text-[11px] font-black uppercase text-slate-500 dark:text-slate-500 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
         `;
 
         if (relatorio.violacoes && relatorio.violacoes.length > 0) {
+            // [MUDANÇA ESSENCIAL]: Se a umidade estiver em atenção ou crítico, injetamos o Ponto de Orvalho na Triagem
             const possuiDesvioUmidade = relatorio.violacoes.some(e => e.parametro === "Umidade");
-            if (possuiDesvioUmidade) {
+            const jaPossuiOrvalho = relatorio.violacoes.some(e => e.parametro === "PontoOrvalho");
+            
+            if (possuiDesvioUmidade && !jaPossuiOrvalho) {
                 relatorio.violacoes.push({
                     parametro: "PontoOrvalho",
                     valor: relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--',
@@ -326,8 +293,8 @@ function obterNomeTraduzido(param) {
         "PM4.0": "Massa de Material Particulado Isocinético (PM4.0)",
         "PM10": "Concentração Gravimétrica Total (PM10)",
         "Temperatura": "Temperatura Operacional Local",
-        "Umidade": "Umidade Relativa do Air Interior",
-        "PontoOrvalho": "Ponto de Orvalho Elevado"
+        "Umidade": "Umidade Relativa do Ar Interior",
+        "PontoOrvalho": "Perigo de Condensação (Ponto de Orvalho)"
     };
     return nomes[param] || param;
 }
@@ -337,7 +304,7 @@ function obterMensagemAnvisa(param, valor) {
         "CO2": `⚠️ Renovação do ar inadequada. Concentração de CO₂ excedendo a meta estipulada de 1000 PPM.`,
         "Temperatura": `🌡️ Temperatura fora da faixa de conforto térmico recomendada pela ANVISA (20°C a 24°C).`,
         "Umidade": `💧 Desvio higrométrico: Umidade fora da banda ideal de conformidade (40% a 65%).`,
-        "PontoOrvalho": `Mede o risco de saturação: valores altos indicam proximidade de condensação líquida em superfícies frias.`
+        "PontoOrvalho": `🚨 Risco iminente de saturação: A alta umidade indica que o ar pode condensar em superfícies frias, gerando gotículas de água que estragam eletroeletrônicos e causam mofo.`
     };
     return mensagens[param] || "Parâmetro ambiental em desconformidade amostral mecânica.";
 }
@@ -347,7 +314,7 @@ function obterMitigacaoAnvisa(param) {
         "CO2": "Incremente o volume de captação de ar externo do ambiente ou force aberturas localizadas em janelas.",
         "Temperatura": "Ajuste o termostato para estabilizar a temperatura operacional rigorosamente entre 20°C e 24°C.",
         "Umidade": "Ative os estágios mecânicos de desumidificação do sistema ou verifique se há infiltrações externas.",
-        "PontoOrvalho": "Reduza a umidade interna ativando funções de desumidificação do sistema de climatização."
+        "PontoOrvalho": "Ative imediatamente a função de desumidificação do sistema de climatização ou ligue um desumidificador mecânico no recinto para conter a umidade."
     };
     return acoes[param] || "Consulte o técnico responsável pelo PMOC do edifício.";
 }
