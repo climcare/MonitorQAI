@@ -74,12 +74,27 @@ function atualizarInterfaceVisual(relatorio) {
         elOrvalho.innerHTML = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'}<span class="text-xl font-light opacity-40">°C</span>`;
     }
 
-    // Exibição da MASSA de particulados nos Cards Menores (conforme solicitado)
-    document.getElementById('valNC05').innerHTML = `${v.pm10 ? v.pm10.toFixed(2) : '--'}<span class="text-xs font-light opacity-60"> µg/m³</span>`;
-    document.getElementById('valNC10').innerHTML = `${v.pm25 ? v.pm25.toFixed(2) : '--'}<span class="text-xs font-light opacity-60"> µg/m³</span>`;
-    document.getElementById('valNC25').innerHTML = `${v.pm40 ? v.pm40.toFixed(2) : '--'}<span class="text-xs font-light opacity-60"> µg/m³</span>`;
-    document.getElementById('valNC100').innerHTML = `${v.pm100 ? v.pm100.toFixed(2) : '--'}<span class="text-xs font-light opacity-60"> µg/m³</span>`;
+    // =========================================================================
+    // CORREÇÃO: Exibição correta da MASSA de particulados usando as chaves exatas do motor
+    // =========================================================================
+    
+    // 1. Massa Viral / Partículas Ultrafinas (PM 1.0)
+    const m10 = v["PM1.0"] || v.pm10 || v.pm1_0;
+    document.getElementById('valNC05').innerHTML = m10 ? `${Number(m10).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
+    
+    // 2. Massa de Fumaça e Vapores (PM 2.5)
+    const m25 = v["PM2.5"] || v.pm25 || v.pm2_5;
+    document.getElementById('valNC10').innerHTML = m25 ? `${Number(m25).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
+    
+    // 3. Massa de Poeira Atmosférica (PM 4.0)
+    const m40 = v["PM4.0"] || v.pm40 || v.pm4_0;
+    document.getElementById('valNC25').innerHTML = m40 ? `${Number(m40).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
+    
+    // 4. Massa de Alérgenos (PM 10 ou PM 10.0)
+    const m100 = v["PM10"] || v["PM10.0"] || v.pm100;
+    document.getElementById('valNC100').innerHTML = m100 ? `${Number(m100).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
 
+    // =========================================================================
     // Lógica Semafórica Granular dos Cards
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
