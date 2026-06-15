@@ -79,22 +79,27 @@ function atualizarInterfaceVisual(relatorio) {
     // CORREÇÃO DEFINITIVA: Mapeamento de chaves resiliente a Case-Sensitive e Pontos
     // =========================================================================
     
+  // =========================================================================
+    // CORREÇÃO CIRÚRGICA: Mapeamento direto e fallbacks baseados no Banco de Dados
+    // =========================================================================
+    
     // 1. Massa Viral / Partículas Ultrafinas (PM 1.0)
-    const m10 = v["PM1.0"] || v["pm1.0"] || v.pm10 || v.pm1_0 || v.pm1;
+    const m10 = v.pm1_0 || v["PM1.0"] || v["pm1.0"] || v.pm10;
     document.getElementById('valNC05').innerHTML = m10 ? `${Number(m10).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
     // 2. Massa de Fumaça e Vapores (PM 2.5)
-    const m25 = v["PM2.5"] || v["pm2.5"] || v.pm25 || v.pm2_5 || v.pm2;
+    const m25 = v.pm25 || v["PM2.5"] || v["pm2.5"] || v.pm2_5;
     document.getElementById('valNC10').innerHTML = m25 ? `${Number(m25).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
-    // 3. Massa de Poeira Atmosférica (PM 4.0) -- O ponto de falha atual
-    const m40 = v["PM4.0"] || v["pm4.0"] || v.pm40 || v.pm4_0 || v.PM4 || v.pm4;
+    // 3. Massa de Poeira Atmosférica (PM 4.0) -> Tratando explicitamente o pm4_0 do banco
+    const m40 = v.pm4_0 || v["PM4.0"] || v["pm4.0"] || v.pm40 || v.pm4;
     document.getElementById('valNC25').innerHTML = m40 ? `${Number(m40).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
-    // 4. Massa de Alérgenos (PM 10 ou PM 10.0)
-    const m100 = v["PM10"] || v["PM10.0"] || v["pm10.0"] || v.pm100 || v.pm10;
+    // 4. Massa de Alérgenos (PM 10 ou PM 10.0) -> Tratando explicitamente o pm10 do banco
+    const m100 = v.pm10 || v["PM10"] || v["PM10.0"] || v.pm100;
     document.getElementById('valNC100').innerHTML = m100 ? `${Number(m100).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
 
+    // =========================================================================
     // =========================================================================;
 
     // =========================================================================
