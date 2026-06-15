@@ -87,18 +87,27 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const q40 = contagem.nc2_5 ? contagem.nc2_5 : (dadosBanco.nc2_5 ? Number(dadosBanco.nc2_5) : 0);
     const q100 = contagem.nc10_0 ? contagem.nc10_0 : (dadosBanco.nc10_0 ? Number(dadosBanco.nc10_0) : 0);
 
-    // Semáforo dinâmico para os blocos unificados
-    const calcularNivelMassa = (valor, limiteAlerta, limiteCritico) => {
-        if (!valor || valor === 0) return "BOM";
-        if (valor > limiteCritico) return "CRITICO";
-        if (valor > limiteAlerta) return "ALERTA";
+    // =========================================================================
+    // MOTORES DE CORRELAÇÃO INTEGRADA (MASSA X CONTAGEM SEGUNDO DIRETRIZES OMS)
+    // =========================================================================
+    const avaliarAnomaliaParticula = (massa, contagem, limiteMassaCritico, limiteContagemCritico) => {
+        if (!massa && !contagem) return "BOM";
+        // Cenário Crítico: Massa pesada ou saturação severa por quantidade discreta (Invisível)
+        if (massa > limiteMassaCritico || contagem > limiteContagemCritico) {
+            return "CRITICO";
+        }
+        // Cenário de Alerta Preventivo por aproximação de limites higiênicos
+        if (massa > (limiteMassaCritico * 0.5) || contagem > (limiteContagemCritico * 0.6)) {
+            return "ALERTA";
+        }
         return "BOM";
     };
 
-    const statusC05 = calcularNivelMassa(m10, 15, 30);
-    const statusC10 = calcularNivelMassa(m25, 15, 35);
-    const statusC25 = calcularNivelMassa(m40, 25, 50);
-    const statusC100 = calcularNivelMassa(m100, 45, 80);
+    // Avaliações de Correlação Física por amostragem ambiental cruzada
+    const statusC05  = avaliarAnomaliaParticula(m10, q10, 25, 80);   // Vírus e Bactérias 
+    const statusC10  = avaliarAnomaliaParticula(m25, q25, 25, 90);   // Fumaça e Aerossóis
+    const statusC25  = avaliarAnomaliaParticula(m40, q40, 35, 100);  // Poeira Atmosférica
+    const statusC100 = avaliarAnomaliaParticula(m100, q100, 50, 100); // Pólen e Alérgenos
 
     // Lógica Semafórica dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
@@ -129,7 +138,6 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
             </div>`;
     } else {
         const critico = relatorio.statusGeral === "CRÍTICO";
-        // Injeção de classes garantindo texto 'text-white' absoluto para não sumir no fundo
         panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all text-white ${critico ? 'bg-rose-600 border-rose-400 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
         txtStatus.innerText = critico ? "🚨 ATENÇÃO: AR IMPRÓPRIO OU POLUÍDO DETECTADO NESTE AMBIENTE" : "⚠️ AVISO: O AR DO AMBIENTE PODE MELHORAR";
 
@@ -185,6 +193,13 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
             return "text-emerald-500";
         };
 
+        // Altera as cores de contorno dos mini-cards dinamicamente baseando-se no cruzamento físico
+        const obterClasseBorda = (status) => {
+            if (status === "ALERTA") return "border-amber-500/70 bg-amber-500/5 dark:bg-amber-500/[0.02]";
+            if (status === "CRITICO") return "border-rose-500 bg-rose-500/5 dark:bg-rose-500/[0.02] animate-pulse shadow-md shadow-rose-500/10";
+            return "border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/50";
+        };
+
         quadroCorrelacao.innerHTML = `
             <div class="space-y-3">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -196,7 +211,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     
-                    <div class="p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60 rounded-xl flex flex-col justify-between text-center">
+                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC05)}">
                         <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Vírus e Bactérias<br><span class="text-[8px] opacity-60 lowercase font-normal">(Partículas Extremamente Leves)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
@@ -204,7 +219,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                         </div>
                     </div>
 
-                    <div class="p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60 rounded-xl flex flex-col justify-between text-center">
+                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC10)}">
                         <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Fumaça e Aerossóis<br><span class="text-[8px] opacity-60 lowercase font-normal">(Combustão e Suspensões Finas)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
@@ -212,7 +227,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                         </div>
                     </div>
 
-                    <div class="p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60 rounded-xl flex flex-col justify-between text-center">
+                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC25)}">
                         <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Poeira Atmosférica<br><span class="text-[8px] opacity-60 lowercase font-normal">(Filtros Saturados e Poeira Fina)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
@@ -220,7 +235,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                         </div>
                     </div>
 
-                    <div class="p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60 rounded-xl flex flex-col justify-between text-center">
+                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC100)}">
                         <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Pólen e Alérgenos<br><span class="text-[8px] opacity-60 lowercase font-normal">(Ácaros e Macropatrógenos)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
@@ -229,8 +244,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
 
                 </div>
-               </div>
-<p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: O indicador de Massa aponta o peso total da sujidade acumulada por metro cúbico. A Contagem detalha exatamente quantas micropartículas discretas estão flutuando de forma invisível por centímetro cúbico (pt/cm³) no ambiente.</p>
+                <p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: O indicador de Massa aponta o peso total da sujidade acumulada por metro cúbico. A Contagem detalha exatamente quantas micropartículas discretas estão flutuando de forma invisível por centímetro cúbico (pt/cm³) no ambiente.</p>
             </div>
         `;
     }
@@ -289,7 +303,7 @@ function obterMensagemOMS(param, valor) {
         "NC0.5": `🚨 Alta quantidade de micropartículas discretas na faixa de vírus flutuando no espaço físico.`,
         "NC1.0": `🚨 Densidade volumétrica de partículas associadas à fumaça e microaerossóis fora dos limites de segurança recomendados.`,
         "NC2.5": `⚠️ Contagem de partículas finas de poeira flutuando de forma dispersa pelo ambiente.`,
-        "NC10.0": `🍂 Quantidade excessiva de macropartículas flutuantes (como pólen ou ácaros) atuando como gatilhos alérgicos ativos.`,
+        "NC10.0": `🍂 Quantidade excessiva de macropartículas flutuantes (como pólen ou ácaros) atuando como gatilhos alérgicos activos.`,
         "Temperatura": `🌡️ O nível térmico registrado encontra-se fora dos parâmetros de estabilidade de conforto recomendados para permanência prolongada.`,
         "Umidade": `💧 Balanço higrométrico inadequado (ar excessivamente seco ou muito saturado), facilitando a propagação de patógenos ou proliferação de mofo.`
     };
