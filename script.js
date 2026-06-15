@@ -90,26 +90,25 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     // =========================================================================
     // MOTORES DE CORRELAÇÃO INTEGRADA (CRITÉRIOS HIGIÊNICOS ANVISA / NBR 17037)
     // =========================================================================
-    const avaliarAnomaliaParticula = (massa, contagem, limiteMassaCritico, limiteContagemCritico) => {
+    const avaliarAnomaliaParticula = (massa, contagem, limiteMassaCritico, limiteContagemAlerta) => {
         if (!massa && !contagem) return "BOM";
         
-        // Cenário Crítico: Saturação de material particulado ou contagem quantitativa acima do tolerável
-        if (massa > limiteMassaCritico || contagem > limiteContagemCritico) {
+        // Se passar do teto absoluto, é Crítico
+        if (massa > limiteMassaCritico || contagem > (limiteContagemAlerta * 1.3)) {
             return "CRITICO";
         }
-        // Cenário de Alerta Preventivo baseado nas margens de segurança regulatórias
-        if (massa > (limiteMassaCritico * 0.6) || contagem > (limiteContagemCritico * 0.7)) {
+        // Sincronizado com a barra lateral: se passar do limite de atenção, ativa o ALERTA
+        if (massa > (limiteMassaCritico * 0.5) || contagem > limiteContagemAlerta) {
             return "ALERTA";
         }
         return "BOM";
     };
 
-    // Ajuste fino dos limites estipulados para evitar falsos-positivos cruzados
-    const statusC05  = avaliarAnomaliaParticula(m10, q10, 25, 120);   // Vírus e Bactérias (Bioaerossóis)
-    const statusC10  = avaliarAnomaliaParticula(m25, q25, 25, 140);   // Fumaça e Aerossóis
-    const statusC25  = avaliarAnomaliaParticula(m40, q40, 40, 160);   // Poeira Atmosférica
-    const statusC100 = avaliarAnomaliaParticula(m100, q100, 50, 180); // Pólen e Alérgenos (Frações macroscópicas)
-
+    // Ajuste fino dos gatilhos de contagem para espelhar perfeitamente a barra lateral
+    const statusC05  = avaliarAnomaliaParticula(m10, q10, 25, 80);   // Vírus e Bactérias (Bioaerossóis)
+    const statusC10  = avaliarAnomaliaParticula(m25, q25, 25, 90);   // Aerossóis e Fumaças
+    const statusC25  = avaliarAnomaliaParticula(m40, q40, 40, 90);   // Poeira Inalável Fina
+    const statusC100 = avaliarAnomaliaParticula(m100, q100, 50, 90); // Particulado Macroscópico (Pólen acende com >90)
     // Lógica Semafórica dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
