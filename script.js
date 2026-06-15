@@ -126,7 +126,7 @@ function atualizarInterfaceVisual(relatorio) {
     
     if (relatorio.statusGeral === "CONFORME") {
         panelStatus.className = "rounded-2xl p-4 text-center shadow-md border-2 transition-all bg-emerald-500 text-white border-emerald-400";
-        txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE SANITÁRIA";
+        txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE";
         document.getElementById('panelTriagem').innerHTML = `
             <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs text-center">
                 ✅ Ar purificado dentro dos limites protetivos. Nenhuma intervenção necessária.
@@ -159,7 +159,7 @@ function atualizarInterfaceVisual(relatorio) {
     if (quadroCorrelacao) {
         quadroCorrelacao.innerHTML = `
             <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-200/60 dark:border-slate-800">
-                <h4 class="text-xs font-black text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">📊 Concentração Volumétrica (Contagem de Partículas no Ar)</h4>
+                <h2 class="text-xs font-black text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">📊 Concentração Volumétrica (Contagem de Partículas no Ar)</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div class="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-100 dark:border-slate-800">
                         <p class="text-[10px] text-slate-400 uppercase font-bold">Vírus e Bactérias</p>
