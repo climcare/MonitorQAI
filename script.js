@@ -92,7 +92,7 @@ function atualizarInterfaceVisual(relatorio) {
     document.getElementById('valNC10').innerHTML = m25 ? `${Number(m25).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
     // 3. Massa de Poeira Atmosférica (PM 4.0) -> Tratando explicitamente o pm4_0 do banco
-    const m40 = v.pm4_0 || v["PM4.0"] || v["pm4.0"] || v.pm40 || v.pm4;
+    const m40 = v.pm4_0 || v["PM4.0"] || v["pm4.0"] || v.pm40 || v.pm4_0;
     document.getElementById('valNC25').innerHTML = m40 ? `${Number(m40).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
     // 4. Massa de Alérgenos (PM 10 ou PM 10.0) -> Tratando explicitamente o pm10 do banco
