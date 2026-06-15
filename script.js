@@ -93,7 +93,6 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const avaliarAnomaliaParticula = (massa, contagem, statusIndividualContagem, limiteMassaCritico) => {
         if (!massa && !contagem) return "BOM";
         
-        // Se a contagem disparou CRÍTICO ou ALERTA no analysis, o card acompanha imediatamente
         if (statusIndividualContagem === "CRÍTICO" || massa > limiteMassaCritico) {
             return "CRITICO";
         }
@@ -103,11 +102,10 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         return "BOM";
     };
 
-    // Ajuste fino mapeando diretamente os status validados de cada faixa do modulo semafórico do analysis
-    const statusC05  = avaliarAnomaliaParticula(m10, q10, relatorio.analiseIndividual.nc05, 25);   // Vírus e Bactérias
-    const statusC10  = avaliarAnomaliaParticula(m25, q25, relatorio.analiseIndividual.nc10, 15);   // Aerossóis e Fumaças (Alinhado a PM2.5 max: 15)
-    const statusC25  = avaliarAnomaliaParticula(m40, q40, "BOM", 40);                              // Poeira Inalável Fina
-    const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual.nc100, 50); // Particulado Macroscópico (Pólen alinhado a PM10 max: 50)
+    const statusC05  = avaliarAnomaliaParticula(m10, q10, relatorio.analiseIndividual.nc05, 25);
+    const statusC10  = avaliarAnomaliaParticula(m25, q25, relatorio.analiseIndividual.nc10, 15);
+    const statusC25  = avaliarAnomaliaParticula(m40, q40, "BOM", 40);
+    const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual.nc100, 50);
 
     // Lógica Semafórica dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
@@ -149,7 +147,18 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                 <h3 class="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
         `;
 
+        // Injeta dinamicamente o Ponto de Orvalho nas violações se a Umidade estiver instável
         if (relatorio.violacoes && relatorio.violacoes.length > 0) {
+            const possuiDesvioUmidade = relatorio.violacoes.some(e => e.parametro === "Umidade");
+            if (possuiDesvioUmidade) {
+                relatorio.violacoes.push({
+                    parametro: "PontoOrvalho",
+                    valor: relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--',
+                    unidade: "°C",
+                    gravidade: relatorio.analiseIndividual.umidade
+                });
+            }
+
             relatorio.violacoes.forEach(erro => {
                 const corBorda = erro.gravidade === 'CRÍTICO' ? 'border-rose-600' : 'border-amber-500';
                 const corTexto = erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500';
@@ -213,39 +222,39 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC05)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Bioaerossóis flutuantes<br><span class="text-[8px] opacity-60 lowercase font-normal">(Indicadores microscópicos leves)</span></p>
+                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Bioaerossóis flutuantes<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Indicadores microscópicos leves)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC10)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Aerossóis e Fumaças<br><span class="text-[8px] opacity-60 lowercase font-normal">(Combustões e Frações Finas)</span></p>
+                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Aerossóis e Fumaças<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Combustões e Frações Finas)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC25)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Poeira Inalável Fina<br><span class="text-[8px] opacity-60 lowercase font-normal">(Sedimentáveis e Suspensões)</span></p>
+                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Poeira Inalável Fina<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Sedimentáveis e Suspensões)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC100)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Particulado Macroscópico<br><span class="text-[8px] opacity-60 lowercase font-normal">(Alérgenos e Frações Grossas)</span></p>
+                        <p class="text-[10px] text-white font-black uppercase tracking-tight">Particulado Macroscópico<br><span class="text-[8px] text-slate-200 lowercase font-normal">(Alérgenos e Frações Grossas)</span></p>
                         <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Massa: <span class="text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-xs font-mono font-bold text-slate-200">Contagem: <span class="text-sm font-black text-sky-400 dark:text-sky-400">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
 
                 </div>
-                <p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
+                <p class="text-[10px] text-white font-semibold italic text-center block mt-1 bg-slate-900/40 p-2 rounded-lg">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
             </div>
         `;
     }
@@ -287,7 +296,8 @@ function obterNomeTraduzido(param) {
         "NC2.5": "Contagem de Particulado Fino Interior",
         "NC10.0": "Contagem de Alérgenos e Macrofrações",
         "Temperatura": "Temperatura Operacional Local",
-        "Umidade": "Umidade Relativa do Ar Interior"
+        "Umidade": "Umidade Relativa do Ar Interior",
+        "PontoOrvalho": "Ponto de Orvalho Elevado"
     };
     return nomes[param] || param;
 }
@@ -306,7 +316,8 @@ function obterMensagemAnvisa(param, valor) {
         "NC2.5": `⚠️ Distribuição de micropartículas finas dispersas extrapolando as faixas ideais de controle isocinético.`,
         "NC10.0": `🍂 Quantidade excessiva de macropartículas em suspensão atuando diretamente como agentes de estresse alérgico respiratório.`,
         "Temperatura": `🌡️ Temperatura fora da faixa operacional estipulada pela ANVISA (20°C a 24°C para ciclo de verão), prejudicando o bem-estar e o rendimento térmico.`,
-        "Umidade": `💧 Desvio higrométrico: Umidade relativa fora da banda ideal (40% a 65%), impactando as condições de conforto ambiental e facilitando proliferações microbiológicas.`
+        "Umidade": `💧 Desvio higrométrico: Umidade relativa fora da banda ideal (40% a 65%), impactando as condições de conforto ambiental e facilitando proliferações microbiológicas.`,
+        "PontoOrvalho": `Mede o conforto térmico: quanto mais alto este valor, mais abafado e úmido parecerá o ambiente. Um valor elevado facilita a proliferação de fungos e mofo.`
     };
     return mensagens[param] || "Parâmetro ambiental em inconformidade com os padrões de amostragem da NBR 17037.";
 }
@@ -325,7 +336,8 @@ function obterMitigacaoAnvisa(param) {
         "NC2.5": "Execute o plano de manutenção e higienização programada dos dutos e caixas de mistura do ambiente climatizado.",
         "NC10.0": "Restrinja a abertura de vãos externos se houver arraste de pólen urbano e assegure a limpeza imediata das grelhas de retorno.",
         "Temperatura": "Ajuste o setpoint do termostato central para realinhar a temperatura operacional à faixa mandatória da ANVISA, mantendo o ambiente estritamente entre 20°C e 24°C.",
-        "Umidade": "Se a umidade estiver excessiva, ative os estágios de desumidificação do sistema de refrigeração; se estiver abaixo de 40%, acione os umidificadores de linha."
+        "Umidade": "Se a umidade estiver excessiva, ative os estágios de desumidificação do sistema de refrigeração; se estiver abaixo de 40%, acione os umidificadores de linha.",
+        "PontoOrvalho": "Ative a função de desumidificação do ar-condicionado, ligue um desumidificador mecânico no recinto ou otimize o balanço de renovação de ar do espaço."
     };
     return acoes[param] || "Acione a equipe de manutenção predial para verificação do PMOC (Plano de Manutenção, Operação e Controle).";
 }
