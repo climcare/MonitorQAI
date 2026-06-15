@@ -229,7 +229,8 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
 
                 </div>
-                <p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: O indicador de Massa aponta o peso total da sujidade acumulada por metro cúbico. A Contagem detalha exatamente quantas micropartículas discretas estão flutuando de forma invisível por centímetro cúbico ($pt/cm^3$) no ambiente.</p>
+               </div>
+<p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: O indicador de Massa aponta o peso total da sujidade acumulada por metro cúbico. A Contagem detalha exatamente quantas micropartículas discretas estão flutuando de forma invisível por centímetro cúbico (pt/cm³) no ambiente.</p>
             </div>
         `;
     }
