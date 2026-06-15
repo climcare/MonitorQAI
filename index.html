@@ -62,8 +62,11 @@
                         <span class="text-xs font-black text-slate-400 uppercase tracking-widest">💧 Umidade</span>
                         <span class="text-[10px] font-bold text-slate-400 font-mono">META: 40~65%</span>
                     </div>
-                    <div class="text-6xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-2xl font-light opacity-40">%</span></div>
+                    <div class="text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-2xl font-light opacity-40">%</span></div>
                     <div id="statusHum" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
+                </div>
+                <div class="text-[11px] font-mono font-bold text-slate-500 mt-2">
+                    🌡️ Ponto de Orvalho: <span id="valPontoOrvalho" class="text-sky-600">--.-°C</span>
                 </div>
 
                 <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between md:col-span-2">
@@ -72,7 +75,7 @@
                         <span class="text-[10px] font-bold text-slate-400 font-mono">PADRÃO OMS: < 1000 PPM</span>
                     </div>
                     <div class="flex items-end gap-4">
-                        <div class="text-5xl font-black tracking-tighter text-slate-900 dark:text-white" id="valCO2">---- <span class="text-xl font-light opacity-40">PPM</span></div>
+                        <div class="text-4xl font-black tracking-tighter text-slate-900 dark:text-white" id="valCO2">---- <span class="text-xl font-light opacity-40">PPM</span></div>
                         <div id="statusCO2" class="mb-2 text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800">Status Ar</div>
                     </div>
                     <p class="text-[10px] text-slate-400 font-medium mt-3 leading-relaxed">O CO₂ indica se o ar está sendo renovado. Níveis altos causam fadiga, perda de concentração e facilitam a transmissão de vírus.</p>
@@ -80,12 +83,12 @@
 
                 <div class="md:col-span-2 grid grid-cols-2 lg:grid-cols-4 gap-3">
                     <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-black text-slate-400 uppercase block">Fumaça / Vírus</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase block">PM0.5 Fumaça / Vírus</span>
                         <span class="text-lg font-black text-slate-900 dark:text-white block mt-1" id="valNC05">--</span>
                         <span class="text-[8px] text-slate-400 font-mono">pt/cm³</span>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-black text-slate-400 uppercase block">Poeira Fina</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase block">PMPoeira Fina</span>
                         <span class="text-lg font-black text-slate-900 dark:text-white block mt-1" id="valNC10">--</span>
                         <span class="text-[8px] text-slate-400 font-mono">pt/cm³</span>
                     </div>
