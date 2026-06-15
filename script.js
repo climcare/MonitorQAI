@@ -61,7 +61,7 @@ function atualizarInterfaceVisual(relatorio) {
     // Telemetria do Topo
     document.getElementById('txtDeviceId').innerText = relatorio.dispositivoId || '--';
     document.getElementById('txtSignal').innerText = `${t.sinalRede || '--'} dBm`;
-    document.getElementById('txtTimestamp').innerText = `⏱️ LIDO EM: ${new Date(relatorio.carimbotempo).toLocaleTimeString('pt-BR')}`;
+    document.getElementById('txtTimestamp').innerText = `⏱️ ANÁLISE EM: ${new Date(relatorio.carimbotempo).toLocaleTimeString('pt-BR')}`;
 
     // Valores dos Cards Principais
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : '--.-'}<span class="text-2xl font-light opacity-40">°C</span>`;
@@ -91,7 +91,7 @@ function atualizarInterfaceVisual(relatorio) {
     document.getElementById('valNC25').innerHTML = m40 ? `${Number(m40).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
     // 4. Massa de Alérgenos (PM 10 ou PM 10.0)
-    const m100 = v["PM10"] || v["PM10.0"] || v.pm100;
+    const m100 = v["PM10"] || v["PM10.0"] || v.pm10;
     document.getElementById('valNC100').innerHTML = m100 ? `${Number(m100).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
 
     // =========================================================================
