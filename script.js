@@ -49,24 +49,25 @@ async function processarCicloMonitoramento() {
 
         if (!error && leituraBruta) {
             const relatorio = analisarLeituraQAI(leituraBruta);
-            atualizarInterfaceVisual(relatorio);
+            atualizarInterfaceVisual(relatorio, leituraBruta);
         }
     } catch (err) { console.error(err); }
 }
 
-function atualizarInterfaceVisual(relatorio) {
-    const v = relatorio.valoresAtuais;
-    const t = relatorio.telemetriaAvancada;
+function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
+    const v = relatorio.valoresAtuais || {};
+    const t = relatorio.telemetriaAvancada || {};
+    const dadosBanco = leituraBruta || {};
 
     // Telemetria do Topo
-    document.getElementById('txtDeviceId').innerText = relatorio.dispositivoId || '--';
-    document.getElementById('txtSignal').innerText = `${t.sinalRede || '--'} dBm`;
-    document.getElementById('txtTimestamp').innerText = `⏱️ ANÁLISE EM: ${new Date(relatorio.carimbotempo).toLocaleTimeString('pt-BR')}`;
+    document.getElementById('txtDeviceId').innerText = relatorio.dispositivoId || dadosBanco.device_id || '--';
+    document.getElementById('txtSignal').innerText = `${t.sinalRede || dadosBanco.signal || '--'} dBm`;
+    document.getElementById('txtTimestamp').innerText = `⏱️ ANÁLISE EM: ${new Date(relatorio.carimbotempo || dadosBanco.created_at).toLocaleTimeString('pt-BR')}`;
 
     // Valores dos Cards Principais
-    document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : '--.-'}<span class="text-2xl font-light opacity-40">°C</span>`;
-    document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : '--.-'}<span class="text-2xl font-light opacity-40">%</span>`;
-    document.getElementById('valCO2').innerHTML = `${v.co2 || '----'} <span class="text-xl font-light opacity-40">PPM</span>`;
+    document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-2xl font-light opacity-40">°C</span>`;
+    document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-2xl font-light opacity-40">%</span>`;
+    document.getElementById('valCO2').innerHTML = `${v.co2 || dadosBanco.co2 || '----'} <span class="text-xl font-light opacity-40">PPM</span>`;
     
     // Injeção do Ponto de Orvalho no Card Exclusivo Lateral
     const elOrvalho = document.getElementById('valPontoOrvalho');
@@ -74,35 +75,28 @@ function atualizarInterfaceVisual(relatorio) {
         elOrvalho.innerHTML = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'}<span class="text-xl font-light opacity-40">°C</span>`;
     }
 
-   
     // =========================================================================
-    // CORREÇÃO DEFINITIVA: Mapeamento de chaves resiliente a Case-Sensitive e Pontos
-    // =========================================================================
-    
-  // =========================================================================
-    // CORREÇÃO CIRÚRGICA: Mapeamento direto e fallbacks baseados no Banco de Dados
+    // CORREÇÃO: Mapeamento de chaves com Fallback direto ao Banco de Dados
     // =========================================================================
     
     // 1. Massa Viral / Partículas Ultrafinas (PM 1.0)
-    const m10 = v.pm1_0 || v["PM1.0"] || v["pm1.0"] || v.pm10;
+    const m10 = dadosBanco.pm1_0 || v.pm1_0 || v["PM1.0"];
     document.getElementById('valNC05').innerHTML = m10 ? `${Number(m10).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
     // 2. Massa de Fumaça e Vapores (PM 2.5)
-    const m25 = v.pm25 || v["PM2.5"] || v["pm2.5"] || v.pm2_5;
+    const m25 = dadosBanco.pm25 || v.pm25 || v["PM2.5"];
     document.getElementById('valNC10').innerHTML = m25 ? `${Number(m25).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
-    // 3. Massa de Poeira Atmosférica (PM 4.0) -> Tratando explicitamente o pm4_0 do banco
-    const m40 = v.pm4_0 || v["PM4.0"] || v["pm4.0"] || v.pm40 || v.pm4_0;
+    // 3. Massa de Poeira Atmosférica (PM 4.0)
+    const m40 = dadosBanco.pm4_0 || v.pm4_0 || v["PM4.0"] || v.pm40;
     document.getElementById('valNC25').innerHTML = m40 ? `${Number(m40).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     
-    // 4. Massa de Alérgenos (PM 10 ou PM 10.0) -> Tratando explicitamente o pm10 do banco
-    const m100 = v.pm10 || v["PM10"] || v["PM10.0"] || v.pm100;
+    // 4. Massa de Alérgenos (PM 10 ou PM 10.0)
+    const m100 = dadosBanco.pm10 || v.pm10 || v["PM10"];
     document.getElementById('valNC100').innerHTML = m100 ? `${Number(m100).toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
 
     // =========================================================================
-    // =========================================================================;
 
-    // =========================================================================
     // Lógica Semafórica Granular dos Cards
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
@@ -113,10 +107,10 @@ function atualizarInterfaceVisual(relatorio) {
     }
 
     // Cores dinâmicas nos textos das massas da grid
-    pintarMiniCard('valNC05', relatorio.analiseIndividual.pm10);
-    pintarMiniCard('valNC10', relatorio.analiseIndividual.pm25);
-    pintarMiniCard('valNC25', relatorio.analiseIndividual.pm40);
-    pintarMiniCard('valNC100', relatorio.analiseIndividual.pm100);
+    pintarMiniCard('valNC05', relatorio.analiseIndividual.pm10 || "BOM");
+    pintarMiniCard('valNC10', relatorio.analiseIndividual.pm25 || "BOM");
+    pintarMiniCard('valNC25', relatorio.analiseIndividual.pm40 || "BOM");
+    pintarMiniCard('valNC100', relatorio.analiseIndividual.pm100 || "BOM");
 
     // Controle do Alerta Físico
     const bannerInfo = document.getElementById('alertaInfoCritico');
@@ -142,48 +136,61 @@ function atualizarInterfaceVisual(relatorio) {
         txtStatus.innerText = critico ? "🚨 ALERTA CRÍTICO: RISCO BIOLÓGICO/SANITÁRIO DETECTADO" : "⚠️ ATENÇÃO: AMBIENTE FORA DOS PADRÕES OPERACIONAIS";
 
         let htmlAlertas = "";
-        relatorio.violacoes.forEach(erro => {
-            htmlAlertas += `
-                <div class="bg-white dark:bg-slate-900 border-l-8 ${erro.gravidade === 'CRÍTICO' ? 'border-rose-600' : 'border-amber-500'} rounded-2xl p-4 shadow-sm space-y-2">
-                    <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter">
-                        <span class="${erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500'}">ANOMALIA: ${obterNomeTraduzido(erro.parametro)}</span>
-                        <span class="text-slate-400">VALOR: ${erro.valor}${erro.unidade}</span>
+        if (relatorio.violacoes && relatorio.violacoes.length > 0) {
+            relatorio.violacoes.forEach(erro => {
+                htmlAlertas += `
+                    <div class="bg-white dark:bg-slate-900 border-l-8 ${erro.gravidade === 'CRÍTICO' ? 'border-rose-600' : 'border-amber-500'} rounded-2xl p-4 shadow-sm space-y-2">
+                        <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter">
+                            <span class="${erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500'}">ANOMALIA: ${obterNomeTraduzido(erro.parametro)}</span>
+                            <span class="text-slate-400">VALOR: ${erro.valor}${erro.unidade}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-700 dark:text-slate-200">${obterMensagemOMS(erro.parametro, erro.valor)}</p>
+                        <div class="text-[11px] font-mono font-bold text-sky-600 dark:text-sky-400 mt-2 uppercase underline">
+                            👉 Protocolo Técnico: ${obterMitigacaoOMS(erro.parametro)}
+                        </div>
                     </div>
-                    <p class="text-xs font-bold text-slate-700 dark:text-slate-200">${obterMensagemOMS(erro.parametro, erro.valor)}</p>
-                    <div class="text-[11px] font-mono font-bold text-sky-600 dark:text-sky-400 mt-2 uppercase underline">
-                        👉 Protocolo Técnico: ${obterMitigacaoOMS(erro.parametro)}
-                    </div>
-                </div>
-            `;
-        });
+                `;
+            });
+        }
         document.getElementById('panelTriagem').innerHTML = htmlAlertas;
     }
 
-    // EXIBIÇÃO DA QUANTIDADE DE PARTÍCULAS (pt/cm³) NO QUADRO DE CORRELAÇÃO INTELIGENTE
+    // EXIBIÇÃO DA QUANTIDADE E TAMANHO TÍPICO DE PARTÍCULA NO QUADRO DE CORRELAÇÃO INTELIGENTE
     const quadroCorrelacao = document.getElementById('panelTriagemMassaQuantidade');
     if (quadroCorrelacao) {
+        const contagem = t.contagemParticulas || {};
+        
+        // Mapeamento e fallback para o tamanho típico da partícula (tps ou bpt)
+        const tpsRaw = dadosBanco.tps || dadosBanco.bpt || t.tamanhoTipico || 0.45;
+        const tamanhoTipicoFormatado = `${Number(tpsRaw).toFixed(2)} µm`;
+
         quadroCorrelacao.innerHTML = `
             <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-200/60 dark:border-slate-800">
-                <h2 class="text-xs font-black text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">📊 Concentração Volumétrica (Contagem de Partículas no Ar)</h2>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">📊 Concentração Volumétrica (Contagem de Partículas no Ar)</h2>
+                    <span class="bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-400 text-[10px] font-mono px-2 py-0.5 rounded font-bold">
+                        📐 TAMANHO TÍPICO: ${tamanhoTipicoFormatado}
+                    </span>
+                </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div class="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-100 dark:border-slate-800">
                         <p class="text-[10px] text-slate-400 uppercase font-bold">Vírus e Bactérias</p>
-                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${t.contagemParticulas.nc0_5 ? t.contagemParticulas.nc0_5.toFixed(0) : '--'} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
+                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${contagem.nc0_5 ? contagem.nc0_5.toFixed(0) : (dadosBanco.nc0_5 ? Number(dadosBanco.nc0_5).toFixed(0) : '--')} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
                     </div>
                     <div class="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-100 dark:border-slate-800">
                         <p class="text-[10px] text-slate-400 uppercase font-bold">Fumaça e Aerossóis</p>
-                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${t.contagemParticulas.nc1_0 ? t.contagemParticulas.nc1_0.toFixed(0) : '--'} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
+                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${contagem.nc1_0 ? contagem.nc1_0.toFixed(0) : (dadosBanco.nc1_0 ? Number(dadosBanco.nc1_0).toFixed(0) : '--')} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
                     </div>
                     <div class="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-100 dark:border-slate-800">
                         <p class="text-[10px] text-slate-400 uppercase font-bold">Poeira Fina</p>
-                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${t.contagemParticulas.nc2_5 ? t.contagemParticulas.nc2_5.toFixed(0) : '--'} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
+                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${contagem.nc2_5 ? contagem.nc2_5.toFixed(0) : (dadosBanco.nc2_5 ? Number(dadosBanco.nc2_5).toFixed(0) : '--')} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
                     </div>
                     <div class="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-100 dark:border-slate-800">
                         <p class="text-[10px] text-slate-400 uppercase font-bold">Pólen e Alérgenos</p>
-                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${t.contagemParticulas.nc10_0 ? t.contagemParticulas.nc10_0.toFixed(0) : '--'} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
+                        <p class="text-lg font-black text-sky-600 dark:text-sky-400 mt-1">${contagem.nc10_0 ? contagem.nc10_0.toFixed(0) : (dadosBanco.nc10_0 ? Number(dadosBanco.nc10_0).toFixed(0) : '--')} <span class="text-[10px] font-normal opacity-70">pt/cm³</span></p>
                     </div>
                 </div>
-                <p class="text-[9px] text-slate-400 font-medium mt-3 italic text-center">💡 Entendimento Prático: Os cards superiores monitoram o peso (Massa) exigido pelas normas regulamentadoras, enquanto esta área detalha o número exato de micropartículas isoladas flutuando por centímetro cúbico do ambiente.</p>
+                <p class="text-[9px] text-slate-400 font-medium mt-3 italic text-center">💡 Entendimento Prático: Os cards superiores monitoram o peso (Massa) exigido pelas normas regulamentadoras, enquanto esta área detalha o número exato de micropartículas isoladas flutuando por centímetro cubic do ambiente.</p>
             </div>
         `;
     }
