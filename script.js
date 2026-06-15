@@ -57,7 +57,7 @@ async function processarCicloMonitoramento() {
 function atualizarInterfaceVisual(relatorio) {
     const v = relatorio.valoresAtuais;
     const t = relatorio.telemetriaAvancada;
-
+    document.getElementById('valPontoOrvalho').innerText = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'}°C`;
     // Telemetria Topo
     document.getElementById('txtDeviceId').innerText = relatorio.dispositivoId || '--';
     document.getElementById('txtSignal').innerText = `${t.sinalRede || '--'} dBm`;
