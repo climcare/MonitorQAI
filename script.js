@@ -74,23 +74,19 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         elOrvalho.innerHTML = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'}<span class="text-xl font-light opacity-40">°C</span>`;
     }
 
-    // =========================================================================
-    // TRATAMENTO RESILIENTE DAS MASSAS (Bypass Direto ao Banco)
-    // =========================================================================
+    // Tratamento das Massas
     const m10 = Number(dadosBanco.pm1_0 || v.pm1_0 || v["PM1.0"] || 0);
     const m25 = Number(dadosBanco.pm25 || v.pm25 || v["PM2.5"] || 0);
     const m40 = Number(dadosBanco.pm4_0 || v.pm4_0 || v["PM4.0"] || v.pm40 || 0);
     const m100 = Number(dadosBanco.pm10 || v.pm10 || v["PM10"] || 0);
 
-    // Injeção dos valores na tela
+    // Injeção de valores das Massas
     document.getElementById('valNC05').innerHTML = m10 > 0 ? `${m10.toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     document.getElementById('valNC10').innerHTML = m25 > 0 ? `${m25.toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     document.getElementById('valNC25').innerHTML = m40 > 0 ? `${m40.toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
     document.getElementById('valNC100').innerHTML = m100 > 0 ? `${m100.toFixed(2)}<span class="text-xs font-light opacity-60"> µg/m³</span>` : '--';
 
-    // =========================================================================
-    // SISTEMA SEMAFÓRICO REAL PARA OS CARDS DE MASSA (Baseado em Índices de Risco)
-    // =========================================================================
+    // Semáforo das Massas
     const calcularNivelMassa = (valor, limiteAlerta, limiteCritico) => {
         if (!valor || valor === 0) return "BOM";
         if (valor > limiteCritico) return "CRITICO";
@@ -98,12 +94,10 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         return "BOM";
     };
 
-    pintarMiniCard('valNC05', calcularNivelMassa(m10, 15, 30));   // Vírus/Bactérias
-    pintarMiniCard('valNC10', calcularNivelMassa(m25, 15, 35));   // Fumaça/Aerossóis
-    pintarMiniCard('valNC25', calcularNivelMassa(m40, 25, 50));   // Poeira Fina
-    pintarMiniCard('valNC100', calcularNivelMassa(m100, 45, 80)); // Pólen/Alérgenos
-
-    // =========================================================================
+    pintarMiniCard('valNC05', calcularNivelMassa(m10, 15, 30));
+    pintarMiniCard('valNC10', calcularNivelMassa(m25, 15, 35));
+    pintarMiniCard('valNC25', calcularNivelMassa(m40, 25, 50));
+    pintarMiniCard('valNC100', calcularNivelMassa(m100, 45, 80));
 
     // Lógica Semafórica dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
@@ -114,14 +108,14 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         pintarCard('cardOrvalho', 'statusOrvalho', relatorio.analiseIndividual.umidade);
     }
 
-    // Controle do Alerta Físico
+    // Banner Físico de Crítico
     const bannerInfo = document.getElementById('alertaInfoCritico');
     if (bannerInfo) {
         if (relatorio.statusGeral === "CRÍTICO") bannerInfo.classList.remove('hidden');
         else bannerInfo.classList.add('hidden');
     }
 
-    // Status Geral Semafórico (Barra Superior)
+    // Status Geral (Barra Superior)
     const panelStatus = document.getElementById('panelStatusGeral');
     const txtStatus = document.getElementById('txtStatusGeral');
     
@@ -137,27 +131,47 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all ${critico ? 'bg-rose-600 text-white border-rose-400 animate-pulse' : 'bg-amber-500 text-white border-amber-400'}`;
         txtStatus.innerText = critico ? "🚨 ATENÇÃO: AR IMPRÓPRIO OU POLUÍDO DETECTADO NESTA SALA" : "⚠️ AVISO: O AR DA SALA PODE MELHORAR";
 
-        let htmlAlertas = "";
+        // =========================================================================
+        // REESTRUTURAÇÃO COMPACTA PARA CELULAR: Triagem Otimizada (Accordion)
+        // =========================================================================
+        let htmlAlertas = `
+            <div class="bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-300/10 rounded-2xl p-3 space-y-2.5">
+                <h3 class="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">📋 Triagem de Mitigações</h3>
+        `;
+
         if (relatorio.violacoes && relatorio.violacoes.length > 0) {
             relatorio.violacoes.forEach(erro => {
+                const corBorda = erro.gravidade === 'CRÍTICO' ? 'border-rose-600' : 'border-amber-500';
+                const corTexto = erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500';
+
                 htmlAlertas += `
-                    <div class="bg-white dark:bg-slate-900 border-l-8 ${erro.gravidade === 'CRÍTICO' ? 'border-rose-600' : 'border-amber-500'} rounded-2xl p-4 shadow-sm space-y-2">
-                        <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter">
-                            <span class="${erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500'}">INDICADOR: ${obterNomeTraduzido(erro.parametro)}</span>
-                            <span class="text-slate-400">VALOR ATUAL: ${erro.valor}${erro.unidade}</span>
-                        </div>
-                        <p class="text-xs font-bold text-slate-700 dark:text-slate-200">${obterMensagemOMS(erro.parametro, erro.valor)}</p>
-                        <div class="text-[11px] font-mono font-bold text-sky-600 dark:text-sky-400 mt-2 uppercase underline">
-                            👉 O QUE FAZER AGORA: ${obterMitigacaoOMS(erro.parametro)}
-                        </div>
+                    <div class="bg-white dark:bg-slate-900 border-l-4 ${corBorda} rounded-xl p-3 shadow-sm">
+                        <details class="group">
+                            <summary class="flex justify-between items-center cursor-pointer list-none focus:outline-none">
+                                <div class="space-y-0.5">
+                                    <p class="text-[11px] font-black ${corTexto} uppercase tracking-tight">⚠️ ${obterNomeTraduzido(erro.parametro)}</p>
+                                    <p class="text-[10px] text-slate-400 font-mono">Atual: ${erro.valor}${erro.unidade}</p>
+                                </div>
+                                <span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded font-bold text-slate-500 dark:text-slate-400 group-open:hidden">👉 Ver Mitigação</span>
+                                <span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded font-bold text-slate-600 dark:text-slate-300 hidden group-open:inline">▲ Fechar</span>
+                            </summary>
+                            <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2 transition-all duration-300">
+                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">${obterMensagemOMS(erro.parametro, erro.valor)}</p>
+                                <div class="bg-sky-50 dark:bg-sky-950/30 rounded-lg p-2.5 border border-sky-100 dark:border-sky-900/40">
+                                    <p class="text-[10px] font-mono font-bold text-sky-700 dark:text-sky-400 uppercase">🛠️ AÇÃO RECOMENDADA:</p>
+                                    <p class="text-xs text-slate-700 dark:text-slate-200 font-medium mt-0.5">${obterMitigacaoOMS(erro.parametro)}</p>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                 `;
             });
         }
+        htmlAlertas += `</div>`;
         document.getElementById('panelTriagem').innerHTML = htmlAlertas;
     }
 
-    // EXIBIÇÃO DA QUANTIDADE E TAMANHO TÍPICO DE PARTÍCULA NO QUADRO DE CORRELAÇÃO INTELIGENTE
+    // Quadro Inferior de Correlação Inteligente
     const quadroCorrelacao = document.getElementById('panelTriagemMassaQuantidade');
     if (quadroCorrelacao) {
         const contagem = t.contagemParticulas || {};
