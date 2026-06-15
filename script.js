@@ -190,7 +190,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     }
 
     // =========================================================================
-    // 3. SEÇÃO UNIFICADA DE PESO E QUANTIDADE DE PARTÍCULAS (CORES DINÂMICAS)
+    // 3. SEÇÃO UNIFICADA DE PESO E QUANTIDADE DE PARTÍCULAS (FONTES E CORES ATUALIZADAS)
     // =========================================================================
     const quadroCorrelacao = document.getElementById('panelTriagemMassaQuantidade');
     if (quadroCorrelacao) {
@@ -210,50 +210,102 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         };
 
         quadroCorrelacao.innerHTML = `
-            <div class="space-y-3">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                    <h2 class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">🔬 Análise Física de Partículas (Peso vs. Quantidade Real - NBR 17037)</h2>
-                    <span class="bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-400 text-[10px] font-mono px-2 py-0.5 rounded font-bold">
+            <div class="space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-1">
+                    <h2 class="text-sm sm:text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                        🔬 Análise Física de Partículas (Peso vs. Quantidade Real - NBR 17037)
+                    </h2>
+                    <span class="bg-sky-100 text-sky-900 dark:bg-sky-950/50 dark:text-sky-400 text-xs sm:text-[10px] font-mono px-2.5 py-1 rounded-md font-bold border border-sky-200/50 dark:border-sky-900/30 w-full sm:w-auto text-center sm:text-left">
                         📐 TAMANHO MÉDIO RELEVANTE: ${tamanhoTipicoFormatado}
                     </span>
                 </div>
                 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     
-                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC05)}">
-                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Bioaerossóis flutuantes<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Indicadores microscópicos leves)</span></p>
-                        <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center transition-all duration-300 bg-white dark:bg-slate-900/50 ${obterClasseBorda(statusC05)}">
+                        <div>
+                            <p class="text-sm sm:text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">
+                                Bioaerossóis flutuantes
+                            </p>
+                            <p class="text-xs sm:text-[10px] text-slate-600 dark:text-slate-400 lowercase font-medium mt-0.5">
+                                (indicadores microscópicos leves)
+                            </p>
+                        </div>
+                        <div class="my-3 py-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-2 border border-slate-100 dark:border-transparent">
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Massa: <span class="text-base sm:text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span>
+                            </p>
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Contagem: <span class="text-base sm:text-sm font-black text-sky-600 dark:text-sky-400">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span>
+                            </p>
                         </div>
                     </div>
 
-                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC10)}">
-                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Aerossóis e Fumaças<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Combustões e Frações Finas)</span></p>
-                        <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center transition-all duration-300 bg-white dark:bg-slate-900/50 ${obterClasseBorda(statusC10)}">
+                        <div>
+                            <p class="text-sm sm:text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">
+                                Aerossóis e Fumaças
+                            </p>
+                            <p class="text-xs sm:text-[10px] text-slate-600 dark:text-slate-400 lowercase font-medium mt-0.5">
+                                (combustões e frações finas)
+                            </p>
+                        </div>
+                        <div class="my-3 py-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-2 border border-slate-100 dark:border-transparent">
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Massa: <span class="text-base sm:text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span>
+                            </p>
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Contagem: <span class="text-base sm:text-sm font-black text-sky-600 dark:text-sky-400">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span>
+                            </p>
                         </div>
                     </div>
 
-                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC25)}">
-                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Poeira Inalável Fina<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Sedimentáveis e Suspensões)</span></p>
-                        <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center transition-all duration-300 bg-white dark:bg-slate-900/50 ${obterClasseBorda(statusC25)}">
+                        <div>
+                            <p class="text-sm sm:text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">
+                                Poeira Inalável Fina
+                            </p>
+                            <p class="text-xs sm:text-[10px] text-slate-600 dark:text-slate-400 lowercase font-medium mt-0.5">
+                                (sedimentáveis e suspensões)
+                            </p>
+                        </div>
+                        <div class="my-3 py-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-2 border border-slate-100 dark:border-transparent">
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Massa: <span class="text-base sm:text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span>
+                            </p>
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Contagem: <span class="text-base sm:text-sm font-black text-sky-600 dark:text-sky-400">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span>
+                            </p>
                         </div>
                     </div>
 
-                    <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC100)}">
-                        <p class="text-[10px] text-slate-900 dark:text-white font-black uppercase tracking-tight">Particulado Macroscópico<br><span class="text-[8px] text-slate-500 dark:text-slate-300 lowercase font-normal">(Alérgenos e Frações Grossas)</span></p>
-                        <div class="my-2 space-y-1">
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Massa: <span class="text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center transition-all duration-300 bg-white dark:bg-slate-900/50 ${obterClasseBorda(statusC100)}">
+                        <div>
+                            <p class="text-sm sm:text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">
+                                Particulado Macroscópico
+                            </p>
+                            <p class="text-xs sm:text-[10px] text-slate-600 dark:text-slate-400 lowercase font-medium mt-0.5">
+                                (alérgenos e frações grossas)
+                            </p>
+                        </div>
+                        <div class="my-3 py-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-2 border border-slate-100 dark:border-transparent">
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Massa: <span class="text-base sm:text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span>
+                            </p>
+                            <p class="text-sm sm:text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                Contagem: <span class="text-base sm:text-sm font-black text-sky-600 dark:text-sky-400">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span>
+                            </p>
                         </div>
                     </div>
 
                 </div>
-                <p class="text-[10px] text-slate-800 dark:text-white font-semibold italic text-center block mt-1 bg-slate-200/50 dark:bg-slate-900/40 p-2 rounded-lg">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
+
+                <div class="bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 p-3 rounded-xl">
+                    <p class="text-xs sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                        <span class="font-bold text-slate-900 dark:text-white">💡 Entendimento Prático:</span> 
+                        A <span class="underline decoration-emerald-500 decoration-2">Massa</span> indica a concentração acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
+                    </p>
+                </div>
             </div>
         `;
     }
