@@ -65,22 +65,24 @@
                     <div id="statusHum" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
                 </div>
 
-                <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between min-h-[160px]">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">🍃 Renovação do Ar (CO₂)</span>
-                        <span class="text-[10px] font-bold text-slate-400 font-mono">LIMITE: 1000 PPM</span>
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between min-h-[160px]">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">🍃 Renovação do Ar (CO₂)</span>
+                            <span class="text-[10px] font-bold text-slate-400 font-mono">LIMITE: 1000 PPM</span>
+                        </div>
+                        <div class="text-5xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-xl font-light opacity-40">PPM</span></div>
+                        <div id="statusCO2" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
                     </div>
-                    <div class="text-5xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-xl font-light opacity-40">PPM</span></div>
-                    <div id="statusCO2" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
-                </div>
 
-                <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between min-h-[160px]">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">💦 Ponto de Orvalho</span>
-                        <span class="text-[10px] font-bold text-slate-400 font-mono">CONFORME UMIDADE</span>
+                    <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between min-h-[160px]">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">💦 Ponto de Orvalho</span>
+                            <span class="text-[10px] font-bold text-slate-400 font-mono">CONFORME UMIDADE</span>
+                        </div>
+                        <div class="text-5xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-xl font-light opacity-40">°C</span></div>
+                        <div id="statusOrvalho" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
                     </div>
-                    <div class="text-5xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-xl font-light opacity-40">°C</span></div>
-                    <div id="statusOrvalho" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
                 </div>
 
                 <div class="md:col-span-2 grid grid-cols-2 lg:grid-cols-4 gap-3">
