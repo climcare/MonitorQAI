@@ -88,26 +88,27 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const q100 = contagem.nc10_0 ? contagem.nc10_0 : (dadosBanco.nc10_0 ? Number(dadosBanco.nc10_0) : 0);
 
     // =========================================================================
-    // MOTORES DE CORRELAÇÃO INTEGRADA (MASSA X CONTAGEM SEGUNDO DIRETRIZES OMS)
+    // MOTORES DE CORRELAÇÃO INTEGRADA (CRITÉRIOS HIGIÊNICOS ANVISA / NBR 17037)
     // =========================================================================
     const avaliarAnomaliaParticula = (massa, contagem, limiteMassaCritico, limiteContagemCritico) => {
         if (!massa && !contagem) return "BOM";
-        // Cenário Crítico: Massa pesada ou saturação severa por quantidade discreta (Invisível)
+        
+        // Cenário Crítico: Saturação de material particulado ou contagem quantitativa acima do tolerável
         if (massa > limiteMassaCritico || contagem > limiteContagemCritico) {
             return "CRITICO";
         }
-        // Cenário de Alerta Preventivo por aproximação de limites higiênicos
-        if (massa > (limiteMassaCritico * 0.5) || contagem > (limiteContagemCritico * 0.6)) {
+        // Cenário de Alerta Preventivo baseado nas margens de segurança regulatórias
+        if (massa > (limiteMassaCritico * 0.6) || contagem > (limiteContagemCritico * 0.7)) {
             return "ALERTA";
         }
         return "BOM";
     };
 
-    // Avaliações de Correlação Física por amostragem ambiental cruzada
-    const statusC05  = avaliarAnomaliaParticula(m10, q10, 25, 80);   // Vírus e Bactérias 
-    const statusC10  = avaliarAnomaliaParticula(m25, q25, 25, 90);   // Fumaça e Aerossóis
-    const statusC25  = avaliarAnomaliaParticula(m40, q40, 35, 100);  // Poeira Atmosférica
-    const statusC100 = avaliarAnomaliaParticula(m100, q100, 50, 100); // Pólen e Alérgenos
+    // Ajuste fino dos limites estipulados para evitar falsos-positivos cruzados
+    const statusC05  = avaliarAnomaliaParticula(m10, q10, 25, 120);   // Vírus e Bactérias (Bioaerossóis)
+    const statusC10  = avaliarAnomaliaParticula(m25, q25, 25, 140);   // Fumaça e Aerossóis
+    const statusC25  = avaliarAnomaliaParticula(m40, q40, 40, 160);   // Poeira Atmosférica
+    const statusC100 = avaliarAnomaliaParticula(m100, q100, 50, 180); // Pólen e Alérgenos (Frações macroscópicas)
 
     // Lógica Semafórica dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
@@ -125,26 +126,28 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         else bannerInfo.classList.add('hidden');
     }
 
-    // Status Geral Semafórico Superior (Texto Forçado para Cor Branca)
+    // Status Geral Semafórico Superior (Ajustado para forçar a visibilidade do texto)
     const panelStatus = document.getElementById('panelStatusGeral');
     const txtStatus = document.getElementById('txtStatusGeral');
     
     if (relatorio.statusGeral === "CONFORME") {
         panelStatus.className = "rounded-2xl p-4 text-center shadow-md border-2 transition-all bg-emerald-500 text-white border-emerald-400";
-        txtStatus.innerText = "🛡️ O AR DO AMBIENTE ESTÁ SEGURO E LIMPO";
+        txtStatus.className = "text-base font-black uppercase tracking-wider text-white";
+        txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
         document.getElementById('panelTriagem').innerHTML = `
             <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs text-center">
-                ✅ Tudo certo! O ar está ótimo para permanência. Nenhuma ação de mitigação é necessária agora.
+                ✅ Parâmetros em conformidade normativa. Nenhuma ação corretiva é necessária para este ambiente climatizado.
             </div>`;
     } else {
         const critico = relatorio.statusGeral === "CRÍTICO";
         panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all text-white ${critico ? 'bg-rose-600 border-rose-400 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
-        txtStatus.innerText = critico ? "🚨 ATENÇÃO: AR IMPRÓPRIO OU POLUÍDO DETECTADO NESTE AMBIENTE" : "⚠️ AVISO: O AR DO AMBIENTE PODE MELHORAR";
+        txtStatus.className = "text-base font-black uppercase tracking-wider text-white";
+        txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
         // Geração dos Accordions na Lateral Direita
         let htmlAlertas = `
             <div class="bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-300/10 rounded-2xl p-3 space-y-2.5">
-                <h3 class="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">📋 Diretrizes Ativas</h3>
+                <h3 class="text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
         `;
 
         if (relatorio.violacoes && relatorio.violacoes.length > 0) {
@@ -164,10 +167,10 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                                 <span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded font-bold text-slate-600 dark:text-slate-300 hidden group-open:inline">▲ Ocultar</span>
                             </summary>
                             <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">${obterMensagemOMS(erro.parametro, erro.valor)}</p>
+                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">${obterMensagemAnvisa(erro.parametro, erro.valor)}</p>
                                 <div class="bg-sky-50 dark:bg-sky-950/30 rounded-lg p-2.5 border border-sky-100 dark:border-sky-900/40">
-                                    <p class="text-[10px] font-mono font-bold text-sky-700 dark:text-sky-400 uppercase">🛠️ PLANO DE MITIGAÇÃO:</p>
-                                    <p class="text-xs text-slate-700 dark:text-slate-200 font-medium mt-0.5">${obterMitigacaoOMS(erro.parametro)}</p>
+                                    <p class="text-[10px] font-mono font-bold text-sky-700 dark:text-sky-400 uppercase">🛠️ PROTOCOLO DE MITIGAÇÃO HIGIÊNICA:</p>
+                                    <p class="text-xs text-slate-700 dark:text-slate-200 font-medium mt-0.5">${obterMitigacaoAnvisa(erro.parametro)}</p>
                                 </div>
                             </div>
                         </details>
@@ -193,7 +196,6 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
             return "text-emerald-500";
         };
 
-        // Altera as cores de contorno dos mini-cards dinamicamente baseando-se no cruzamento físico
         const obterClasseBorda = (status) => {
             if (status === "ALERTA") return "border-amber-500/70 bg-amber-500/5 dark:bg-amber-500/[0.02]";
             if (status === "CRITICO") return "border-rose-500 bg-rose-500/5 dark:bg-rose-500/[0.02] animate-pulse shadow-md shadow-rose-500/10";
@@ -203,7 +205,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         quadroCorrelacao.innerHTML = `
             <div class="space-y-3">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                    <h2 class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">🔬 Análise Física de Partículas (Peso vs. Quantidade Real)</h2>
+                    <h2 class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">🔬 Análise Física de Partículas (Peso vs. Quantidade Real - NBR 17037)</h2>
                     <span class="bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-400 text-[10px] font-mono px-2 py-0.5 rounded font-bold">
                         📐 TAMANHO MÉDIO RELEVANTE: ${tamanhoTipicoFormatado}
                     </span>
@@ -212,7 +214,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC05)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Vírus e Bactérias<br><span class="text-[8px] opacity-60 lowercase font-normal">(Partículas Extremamente Leves)</span></p>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Bioaerossóis flutuantes<br><span class="text-[8px] opacity-60 lowercase font-normal">(Indicadores microscópicos leves)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
                             <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
@@ -220,7 +222,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC10)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Fumaça e Aerossóis<br><span class="text-[8px] opacity-60 lowercase font-normal">(Combustão e Suspensões Finas)</span></p>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Aerossóis e Fumaças<br><span class="text-[8px] opacity-60 lowercase font-normal">(Combustões e Frações Finas)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
                             <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
@@ -228,7 +230,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC25)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Poeira Atmosférica<br><span class="text-[8px] opacity-60 lowercase font-normal">(Filtros Saturados e Poeira Fina)</span></p>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Poeira Inalável Fina<br><span class="text-[8px] opacity-60 lowercase font-normal">(Sedimentáveis e Suspensões)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
                             <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
@@ -236,7 +238,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
 
                     <div class="p-3 border rounded-xl flex flex-col justify-between text-center transition-all duration-300 ${obterClasseBorda(statusC100)}">
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Pólen e Alérgenos<br><span class="text-[8px] opacity-60 lowercase font-normal">(Ácaros e Macropatrógenos)</span></p>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-tight">Particulado Macroscópico<br><span class="text-[8px] opacity-60 lowercase font-normal">(Alérgenos e Frações Grossas)</span></p>
                         <div class="my-2 space-y-1">
                             <p class="text-xs font-mono font-bold text-slate-500">Massa: <span class="text-sm font-black ${obterClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
                             <p class="text-xs font-mono font-bold text-slate-500">Contagem: <span class="text-sm font-black text-sky-600 dark:text-sky-400">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
@@ -244,7 +246,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                     </div>
 
                 </div>
-                <p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: O indicador de Massa aponta o peso total da sujidade acumulada por metro cúbico. A Contagem detalha exatamente quantas micropartículas discretas estão flutuando de forma invisível por centímetro cúbico (pt/cm³) no ambiente.</p>
+                <p class="text-[9px] text-slate-400 font-medium italic text-center block mt-1">💡 Entendimento Prático Integrado: A Massa indica a concentração gravimétrica ponderada acumulada no metro cúbico. A Contagem detalha o perfil volumétrico discreto ($pt/cm^3$) de impurezas dinâmicas no ar interior, conforme preconiza a regulamentação higiênica nacional.</p>
             </div>
         `;
     }
@@ -274,57 +276,57 @@ function pintarCard(cardId, statusId, nivel) {
 
 function obterNomeTraduzido(param) {
     const nomes = {
-        "CO2": "Gás Carbônico (Ar Abafado)",
+        "CO2": "Dióxido de Carbono (Renovação do Ar)",
         "CO": "Monóxido de Carbono (Gás Tóxico)",
-        "VOC": "Vapores Químicos (Cheiros/Produtos)",
-        "PM1.0": "Partículas de Vírus e Bactérias (PM1.0)",
-        "PM2.5": "Partículas de Fumaça e Aerossóis (PM2.5)",
-        "PM4.0": "Partículas de Poeira Atmosférica (PM4.0)",
-        "PM10": "Partículas de Pólen e Alérgenos (PM10)",
-        "NC0.5": "Contagem de Vírus e Bactérias",
-        "NC1.0": "Contagem de Fumaça e Aerossóis",
-        "NC2.5": "Contagem de Poeira Fina",
-        "NC10.0": "Contagem de Pólen e Alérgenos",
-        "Temperatura": "Temperatura do Ambiente",
-        "Umidade": "Umidade do Ar"
+        "VOC": "Compostos Orgânicos Voláteis (Precursores Químicos)",
+        "PM1.0": "Massa de Bioaerossóis Submicrométricos (PM1.0)",
+        "PM2.5": "Massa de Partículas Finas Inaláveis (PM2.5)",
+        "PM4.0": "Massa de Material Particulado Isocinético (PM4.0)",
+        "PM10": "Concentração Gravimétrica Total (PM10)",
+        "NC0.5": "Contagem de Bioaerossóis",
+        "NC1.0": "Contagem de Frações de Queima",
+        "NC2.5": "Contagem de Particulado Fino Interior",
+        "NC10.0": "Contagem de Alérgenos e Macrofrações",
+        "Temperatura": "Temperatura Operacional Local",
+        "Umidade": "Umidade Relativa do Ar Interior"
     };
     return nomes[param] || param;
 }
 
-function obterMensagemOMS(param, valor) {
+function obterMensagemAnvisa(param, valor) {
     const mensagens = {
-        "CO2": `⚠️ O ar está ficando abafado por falta de circulação externa. Isso pode induzir sonolência, queda de rendimento intelectual e aumentar a persistência de aerossóis biológicos no ambiente.`,
-        "CO": `🚨 Gás altamente tóxico detectado! Risco iminente e severo à integridade do sistema respiratório de todos os ocupantes.`,
-        "VOC": `⚠️ Concentração de compostos voláteis orgânicos detectada (produtos químicos suspensos, solventes ou sprays sanitizantes).`,
-        "PM1.0": `🚨 Concentração crítica de partículas ultrafinas. Esses microrganismos conseguem penetrar profundamente os alvéolos pulmonares.`,
-        "PM2.5": `🚨 Nível elevado de fumaça, fuligem ou suspensões industriais finas que ultrapassam as barreiras de filtragem naturais das vias superiores.`,
-        "PM4.0": `🌬️ Excesso de poeira e material particulado mineral em suspensão direta no ambiente.`,
-        "PM10": `🍂 Elevada presença de poeiras macroscópicas, alérgenos fúngicos ou ácaros, altamente prejudicial para indivíduos com quadros asmáticos ou rinite.`,
-        "NC0.5": `🚨 Alta quantidade de micropartículas discretas na faixa de vírus flutuando no espaço físico.`,
-        "NC1.0": `🚨 Densidade volumétrica de partículas associadas à fumaça e microaerossóis fora dos limites de segurança recomendados.`,
-        "NC2.5": `⚠️ Contagem de partículas finas de poeira flutuando de forma dispersa pelo ambiente.`,
-        "NC10.0": `🍂 Quantidade excessiva de macropartículas flutuantes (como pólen ou ácaros) atuando como gatilhos alérgicos activos.`,
-        "Temperatura": `🌡️ O nível térmico registrado encontra-se fora dos parâmetros de estabilidade de conforto recomendados para permanência prolongada.`,
-        "Umidade": `💧 Balanço higrométrico inadequado (ar excessivamente seco ou muito saturado), facilitando a propagação de patógenos ou proliferação de mofo.`
+        "CO2": `⚠️ Renovação do ar inadequada. Concentração de CO₂ excedendo a meta estipulada de 1000 PPM, gerando saturação antropogênica corporativa.`,
+        "CO": `🚨 Condição crítica: presença de Monóxido de Carbono (CO) acima dos limiares higiênicos, indicando contaminação ou refluxo de gases externos.`,
+        "VOC": `⚠️ Concentração de Compostos Orgânicos Voláteis superior às taxas recomendadas pela NBR 17037 para ambientes climatizados artificiais.`,
+        "PM1.0": `🚨 Bioaerossóis em patamares instáveis. Alta concentração de micropartículas finas com capacidade de retenção suspensa.`,
+        "PM2.5": `🚨 Material particulado fino inalável acima dos limites higiênicos ideais de pureza e filtragem ambiental.`,
+        "PM4.0": `🌬️ Concentração de poeira e aerodispersoides em elevação na zona respiratória dos ocupantes.`,
+        "PM10": `🍂 Nível de particulado total em suspensão (PM10) inadequado, favorecendo o transporte de alérgenos e ácaros no recinto.`,
+        "NC0.5": `🚨 Densidade de contagem microscópica elevada, superando a taxa de atenuação passiva do fluxo de ar local.`,
+        "NC1.0": `🚨 Contagem de micropartículas na curva de fumaça ou queima acima das taxas aceitáveis de pureza interna.`,
+        "NC2.5": `⚠️ Distribuição de micropartículas finas dispersas extrapolando as faixas ideais de controle isocinético.`,
+        "NC10.0": `🍂 Quantidade excessiva de macropartículas em suspensão atuando diretamente como agentes de estresse alérgico respiratório.`,
+        "Temperatura": `🌡️ Temperatura fora da faixa operacional estipulada pela ANVISA (20°C a 24°C para ciclo de verão), prejudicando o bem-estar e o rendimento térmico.`,
+        "Umidade": `💧 Desvio higrométrico: Umidade relativa fora da banda ideal (40% a 65%), impactando as condições de conforto ambiental e facilitando proliferações microbiológicas.`
     };
-    return mensagens[param] || "Um dos indicadores ambientais desestabilizou e saiu da zona segura recomendada.";
+    return mensagens[param] || "Parâmetro ambiental em inconformidade com os padrões de amostragem da NBR 17037.";
 }
 
-function obterMitigacaoOMS(param) {
+function obterMitigacaoAnvisa(param) {
     const acoes = {
-        "CO2": "Promova abertura imediata de portas e janelas periféricas para promover renovação de ar externa, ou eleve a taxa de captação forçada do sistema de ventilação mecânica.",
-        "CO": "EVACUE O AMBIENTE IMEDIATAMENTE. Abra todas as saídas e acione os protocolos de emergência/manutenção predial.",
-        "VOC": "Interrompa a manipulação de produtos químicos ou sprays no local e ative exaustores ou purificadores de ar dedicados.",
-        "PM1.0": "Ligue purificadores equipados com filtragem absoluta HEPA em potência máxima e assegure circulação de ar limpo no recinto.",
-        "PM2.5": "Se houver fumaça externa infiltrando, feche as janelas frontais e acione recirculação com purificação forçada de ar imediatamente.",
-        "PM4.0": "Recomenda-se realizar higienização de superfícies com pano úmido para capturar o particulado decantado.",
-        "PM10": "Abra as passagens de ar para diluição de alérgenos e providencie a limpeza imediata de filtros de climatização.",
-        "NC0.5": "Eleve a renovação volumétrica de ar externo e certifique-se de que os purificadores estejam com os filtros ativos na velocidade máxima.",
-        "NC1.0": "Ligue sistemas de filtragem imediata e bloqueie fontes geradoras de fumaça próximas às entradas de ar.",
-        "NC2.5": "Monitore os filtros do ambiente e limpe o piso com pano úmido para mitigar o levantamento de poeira suspensa.",
-        "NC10.0": "Ative ciclos de filtragem e mantenha janelas fechadas caso esteja ocorrendo picos de pólen externo trazidos pelo vento.",
-        "Temperatura": "Ajuste o controle central de climatização/termostato de modo a trazer e estabilizar o ambiente estritamente entre 20°C e 24°C.",
-        "Umidade": "Se o ar estiver seco, utilize umidificação controlada; se estiver saturado, ative a função de desumidificação do sistema mecânico ou ar-condicionado."
+        "CO2": "Incremente imediatamente o volume de ar externo captado através do sistema mecânico ou realize aberturas localizadas de janelas para forçar a renovação do ar e diluição do CO₂.",
+        "CO": "PROTOCOLO DE EMERGÊNCIA: Evacue a área técnica imediatamente, localize a fonte de combustão ou refluxo e isole as tomadas de ar externas contaminadas.",
+        "VOC": "Suspenda imediatamente o uso de saneantes químicos, tintas ou sprays, e opere a renovação forçada em vazão máxima para exaustão dos precursores voláteis.",
+        "PM1.0": "Ative os purificadores auxiliares e certifique-se da estanqueidade e integridade operacional dos filtros de classe absoluta dispostos no fancoil.",
+        "PM2.5": "Avalie se há infiltração de ar externo sem filtragem prévia; mantenha barreiras físicas limpas e opere o sistema em modo de filtragem de alta eficiência.",
+        "PM4.0": "Providencie limpeza corretiva de superfícies por método úmido (vedando varrição a seco) para mitigar a ressuscitação do material particulado.",
+        "PM10": "Verifique o estado de colmatação dos pré-filtros (filtros grossos G4) do condicionador de ar e providencie substituição ou higienização imediata.",
+        "NC0.5": "Eleve a velocidade dos ciclos de filtragem e mantenha a taxa de recirculação passando continuamente pela barreira HEPA.",
+        "NC1.0": "Mitigue as fontes internas de emanação de fumaça e isole os acessos periféricos se houver focos externos de queimada.",
+        "NC2.5": "Execute o plano de manutenção e higienização programada dos dutos e caixas de mistura do ambiente climatizado.",
+        "NC10.0": "Restrinja a abertura de vãos externos se houver arraste de pólen urbano e assegure a limpeza imediata das grelhas de retorno.",
+        "Temperatura": "Ajuste o setpoint do termostato central para realinhar a temperatura operacional à faixa mandatória da ANVISA, mantendo o ambiente estritamente entre 20°C e 24°C.",
+        "Umidade": "Se a umidade estiver excessiva, ative os estágios de desumidificação do sistema de refrigeração; se estiver abaixo de 40%, acione os umidificadores de linha."
     };
-    return acoes[param] || "Comunique a equipe técnica de manutenção ou alterne aberturas de ventilação para renovação do ar.";
+    return acoes[param] || "Acione a equipe de manutenção predial para verificação do PMOC (Plano de Manutenção, Operação e Controle).";
 }
