@@ -77,10 +77,15 @@ function atualizarInterfaceVisual(relatorio) {
     document.getElementById('valNC25').innerText = t.contagemParticulas.nc2_5 ? t.contagemParticulas.nc2_5.toFixed(0) : '--';
     document.getElementById('valNC100').innerText = t.contagemParticulas.nc10_0 ? t.contagemParticulas.nc10_0.toFixed(0) : '--';
 
-    // Lógica Semafórica Granular dos Cards
+    // Lógica Semafórica Granular dos Cards Principais
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
     pintarCard('cardCO2', 'statusCO2', relatorio.analiseIndividual.co2);
+
+    // Lógica Semafórica Dinâmica das Sub-Partículas (Alteração de Cor de Texto na Grid)
+    pintarMiniCard('valNC05', relatorio.analiseIndividual.nc05);
+    pintarMiniCard('valNC10', relatorio.analiseIndividual.nc10);
+    pintarMiniCard('valNC100', relatorio.analiseIndividual.nc100);
 
     // Controle do Alerta Físico de Relação Massa vs Quantidade
     const bannerInfo = document.getElementById('alertaInfoCritico');
@@ -106,7 +111,7 @@ function atualizarInterfaceVisual(relatorio) {
         panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all ${critico ? 'bg-rose-600 text-white border-rose-400 animate-pulse' : 'bg-amber-500 text-white border-amber-400'}`;
         txtStatus.innerText = critico ? "🚨 ALERTA CRÍTICO: RISCO BIOLÓGICO/SANITÁRIO DETECTADO" : "⚠️ ATENÇÃO: AMBIENTE FORA DOS PADRÕES OPERACIONAIS";
 
-        // Gerador Dinâmico de Triagens com Mitigação Detalhada
+        // Gerador Dinâmico de Triagens com Mitigação Detalhada e Rótulos Clínicos Explicados
         let htmlAlertas = "";
         relatorio.violacoes.forEach(erro => {
             htmlAlertas += `
@@ -147,13 +152,25 @@ function pintarCard(cardId, statusId, nivel) {
     }
 }
 
+function pintarMiniCard(elementId, nivel) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.classList.remove('text-emerald-500', 'text-amber-500', 'text-rose-500', 'text-slate-900', 'dark:text-white');
+    if (nivel === "BOM") el.classList.add('text-emerald-500');
+    else if (nivel === "ALERTA") el.classList.add('text-amber-500');
+    else el.classList.add('text-rose-500');
+}
+
 function obterNomeTraduzido(param) {
     const nomes = {
         "CO2": "CO₂ (Gás Carbônico)",
         "CO": "CO (Monóxido de Carbono)",
-        "VOC": "TVOC (Compostos Orgânicos Voláteis / Químicos)",
-        "PM2.5": "PM2.5 (Partículas Finas / Fumaça e Vírus)",
-        "PM10": "PM10 (Partículas Grossas / Poeira e Pólen)",
+        "VOC": "TVOC (Compostos Orgânicos Voláteis / Vapores Químicos)",
+        "PM2.5": "PM2.5 (Massa de Partículas Finas / Fumaça e Vírus)",
+        "PM10": "PM10 (Massa de Partículas Grossas / Poeira e Pólen)",
+        "NC0.5": "NC 0.5 (Contagem de Vírus e Bactérias)",
+        "NC1.0": "NC 1.0 (Contagem de Fumaça e Aerossóis)",
+        "NC10.0": "NC 10.0 (Contagem de Poeira, Ácaros e Pólen)",
         "Temperatura": "Temperatura Ambiente",
         "Umidade": "Umidade Relativa"
     };
@@ -162,26 +179,32 @@ function obterNomeTraduzido(param) {
 
 function obterMensagemOMS(param, valor) {
     const mensagens = {
-        "CO2": `🚨 EXCESSO DE CO₂ (GÁS CARBÔNICO) EM ${valor} PPM: O limite seguro da OMS foi violado. Indica confinamento severo do ar ambiente, queda na saturação de oxigênio cognitivo e alta probabilidade de proliferação cruzada de patógenos aéreos.`,
-        "CO": `💀 TOXICIDADE POR CO (MONÓXIDO DE CARBONO) EM ${valor} PPM: Gás asfixiante mecânico invisível e inodoro. Risco letal iminente por saturação celular de hemoglobinas.`,
-        "VOC": `⚠️ SATURAÇÃO DE TVOC (QUÍMICOS VOLÁTEIS) EM ${valor}: Saturação química oriunda de desinfetantes pesados, tintas ou solventes. Risco de cefaleia química e irritação de mucosas respiratórias.`,
-        "PM2.5": `😷 ALERTA PM2.5 (VÍRUS, BACTÉRIAS E FUMAÇA) EM ${valor} µg/m³: Partículas com diâmetro molecular ultrafino capaz de romper a barreira alveolar e circular livremente no fluxo sanguíneo do paciente.`,
-        "PM10": `🍂 ALERTA PM10 (POEIRA ATMOSFÉRICA E PÓLEN) EM ${valor} µg/m³: Massa volumétrica de poeiras grossas e alérgenos em suspensão saturando o sistema filtrante do local.`,
-        "Temperatura": `🌡️ DESCONFORTO TÉRMICO EM ${valor}°C: Ambiente fora do padrão operacional estipulado para a estabilidade metabólica humana e preservação de insumos.`,
-        "Umidade": `💧 ANOMALIA HIGROMÉTRICA EM ${valor}%: Índices elevados aceleram esporos de fungos/mofo; índices secos comprometem a barreira mucosa protetora nasal.`
+        "CO2": `🚨 EXCESSO DE CO₂ (GÁS CARBÔNICO) EM ${valor} PPM: Limite seguro da OMS violado. Indica confinamento severo do ar, queda na capacidade cognitiva e alta probabilidade de proliferação de patógenos por vias aéreas.`,
+        "CO": `💀 TOXICIDADE POR CO (MONÓXIDO DE CARBONO) EM ${valor} PPM: Gás asfixiante invisível e altamente tóxico. Risco letal iminente por saturação celular de hemoglobinas.`,
+        "VOC": `⚠️ SATURAÇÃO DE TVOC (VAPORES QUÍMICOS) EM ${valor}: Concentração prejudicial decorrente de produtos de faxina concentrados, solventes ou tintas. Risco de intoxicação de vias aéreas superiores.`,
+        "PM2.5": `😷 ALERTA DE MASSA PM2.5 (FUMAÇA E VÍRUS) EM ${valor} µg/m³: Peso total elevado de micropartículas com diâmetro molecular ultrafino capaz de transpor os alvéolos e invadir o fluxo sanguíneo.`,
+        "PM10": `🍂 ALERTA DE MASSA PM10 (POEIRA E PÓLEN) EM ${valor} µg/m³: Excesso de massa volumétrica de poeiras grossas e alérgenos saturando o sistema mecânico de filtragem da sala.`,
+        "NC0.5": `🦠 ALERTA BIOLÓGICO CRÍTICO (NC 0.5) EM ${valor} pt/cm³: Quantidade massiva de partículas correspondentes ao tamanho de vírus isolados (Influenza, Coronavírus) e colônias de bactérias em suspensão. Alto risco de contaminação cruzada aérea!`,
+        "NC1.0": `🚬 ALERTA DE RISCO COGNITIVO (NC 1.0) EM ${valor} pt/cm³: Altíssima densidade de partículas com perfil físico de fumaça de cigarro/incêndio, fuligem urbana ou aerossóis secos pós-espirro.`,
+        "NC10.0": `🌾 ALERTA DE ALÉRGENOS AGUDOS (NC 10.0) EM ${valor} pt/cm³: Concentração física extrema de fezes de ácaros microscópicos, esporos reprodutores de mofo ou grãos de pólen vegetal no recinto.`,
+        "Temperatura": `🌡️ DESCONFORTO TÉRMICO EM ${valor}°C: Ambiente fora do padrão regulamentar estipulado para a estabilidade metabólica humana.`,
+        "Umidade": `💧 ANOMALIA HIGROMÉTRICA EM ${valor}%: Níveis elevados aceleram bolores e fungos nas paredes; níveis baixos ressecam e ferem mucosas nasais.`
     };
     return mensagens[param] || "Substância operacional fora das metas sanitárias regulamentadas.";
 }
 
 function obterMitigacaoOMS(param) {
     const acoes = {
-        "CO2": "EVACUAR PARCIALMENTE OU ABRIR TODAS AS JANELAS IMEDIATAMENTE. Ativar admissão de ar externo nas centrais HVAC.",
-        "CO": "EVACUAÇÃO COMPLETA IMEDIATA. Cortar fontes de combustão e acionar Brigada de Emergência.",
-        "VOC": "Ligar sistemas de exaustão forçada no nível máximo e interromper aplicação de produtos de limpeza industriais.",
-        "PM2.5": "Ativar purificadores autônomos equipados com barreiras de filtragem absoluta HEPA. Verificar vedações de janelas.",
-        "PM10": "Realizar higienização úmida imediata do piso para decantação de poeiras e inspecionar filtros mecânicos G4 do prédio.",
-        "Temperatura": "Regular os parâmetros de setpoint no termostato central ou checar janelas abertas sabotando o sistema.",
-        "Umidade": "Se alta, acionar o ciclo de desumidificação ativa por serpentina do HVAC. Se baixa, acionar umidificadores ultrassônicos."
+        "CO2": "EVACUAR PARCIALMENTE OU ABRIR TODAS AS JANELAS IMEDIATAMENTE. Ajustar abertura dos dampers de captação externa no painel do HVAC.",
+        "CO": "EVACUAÇÃO COMPLETA IMEDIATA. Cortar fontes mecânicas de combustão e acionar Brigada de Emergência.",
+        "VOC": "Ligar exaustores no modo de vazão máxima e interromper qualquer aplicação técnica de desinfetantes industriais no local.",
+        "PM2.5": "Ativar purificadores autônomos com barreiras de filtragem absoluta HEPA. Verificar vedações de portas em relação a fumaças.",
+        "PM10": "Realizar higienização úmida imediata do piso para decantação mecânica de poeiras e inspecionar filtros G4 do prédio.",
+        "NC0.5": "LIGAR PURIFICADORES DE AR COM FILTRO ABSOLUTO HEPA NA VELOCIDADE MÁXIMA. Avaliar mascaramento emergencial de pacientes.",
+        "NC1.0": "Ativar ciclos de renovação forçada para eliminação de vapores em suspensão e checar focos de queima ou infiltrações de fuligem.",
+        "NC10.0": "Providenciar substituição imediata das mantas de teto do ar-condicionado e higienizar cortinas/carpetes.",
+        "Temperatura": "Regular os setpoints de refrigeração no termostato central para retornar à faixa entre 20°C e 24°C.",
+        "Umidade": "Se alta, acionar ciclo de desumidificação ativa por serpentina (HVAC). Se baixa, acionar umidificadores ultrassônicos prediais."
     };
-    return acoes[param] || "Acionar corpo de engenharia predial técnica para intervenção direta.";
+    return acoes[param] || "Acionar corpo de engenharia predial técnica para intervenção operacional direta.";
 }
