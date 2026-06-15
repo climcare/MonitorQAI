@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full">
 <head>
-    <link rel="icon" href="data:,">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QAI - Inteligência Ambiental OMS</title>
+    <link class="rounded-full" rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
@@ -20,11 +20,11 @@
                     <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse block"></span>
                 </div>
                 <div>
-                    <h1 class="text-lg font-black tracking-tight uppercase leading-tight">Monitoramento Biológico & Ar</h1>
+                    <h1 class="text-lg font-black tracking-tight uppercase leading-tight">Monitoramento Biológico & Qualidade do Ar</h1>
                     <div class="flex flex-wrap justify-center sm:justify-start gap-3 mt-1 text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest">
-                        <span>ID: <span id="txtDeviceId" class="text-slate-600 dark:text-slate-300">--</span></span>
-                        <span>Sinal: <span id="txtSignal" class="text-slate-600 dark:text-slate-300">-- dBm</span></span>
-                        <span id="txtTimestamp" class="text-emerald-600">⏱️ Sincronizando...</span>
+                        <span>ID DISPOSITIVO: <span id="txtDeviceId" class="text-slate-600 dark:text-slate-300">--</span></span>
+                        <span>SINAL WI-FI: <span id="txtSignal" class="text-slate-600 dark:text-slate-300">-- dBm</span></span>
+                        <span id="txtTimestamp" class="text-emerald-600">⏱️ SINCRONIZANDO...</span>
                     </div>
                 </div>
             </div>
@@ -41,68 +41,87 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <div class="lg:col-span-4 space-y-4">
-                <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Painel de Resposta Rápida</h2>
-                <div id="panelTriagem" class="space-y-3">
-                    </div>
+                <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Triagem e Resposta Rápida OMS</h2>
+                <div id="panelTriagem" class="space-y-3"></div>
             </div>
 
             <main class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between min-h-[160px]">
                     <div class="flex justify-between items-start">
-                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">🌡️ Temperatura</span>
+                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">🌡️ Temperatura Industrial</span>
                         <span class="text-[10px] font-bold text-slate-400 font-mono">META: 20~24°C</span>
                     </div>
-                    <div class="text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-2xl font-light opacity-40">°C</span></div>
+                    <div class="text-6xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-2xl font-light opacity-40">°C</span></div>
                     <div id="statusTemp" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
                 </div>
 
                 <div id="cardHum" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between min-h-[160px]">
                     <div class="flex justify-between items-start">
-                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">💧 Umidade</span>
+                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">💧 Umidade Relativa</span>
                         <span class="text-[10px] font-bold text-slate-400 font-mono">META: 40~65%</span>
                     </div>
-                    <div class="text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-2xl font-light opacity-40">%</span></div>
+                    <div class="text-6xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-2xl font-light opacity-40">%</span></div>
+                    
+                    <div class="text-[12px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mb-2">
+                        💦 <span class="uppercase tracking-wider">Orvalho:</span> <span id="valPontoOrvalho" class="text-sky-600 dark:text-sky-400 font-mono font-black">--.-°C</span>
+                    </div>
+
                     <div id="statusHum" class="text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
-                </div>
-                <div class="text-[11px] font-mono font-bold text-slate-500 mt-2">
-                    🌡️ Ponto de Orvalho: <span id="valPontoOrvalho" class="text-sky-600">--.-°C</span>
                 </div>
 
                 <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border-4 border-transparent transition-all flex flex-col justify-between md:col-span-2">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">🍃 Renovação do Ar (CO₂)</span>
-                        <span class="text-[10px] font-bold text-slate-400 font-mono">PADRÃO OMS: < 1000 PPM</span>
+                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">🍃 Renovação do Ar: CO₂ (Gás Carbônico)</span>
+                        <span class="text-[10px] font-bold text-slate-400 font-mono">TETO OMS: 1000 PPM</span>
                     </div>
                     <div class="flex items-end gap-4">
-                        <div class="text-4xl font-black tracking-tighter text-slate-900 dark:text-white" id="valCO2">---- <span class="text-xl font-light opacity-40">PPM</span></div>
+                        <div class="text-5xl font-black tracking-tighter text-slate-900 dark:text-white" id="valCO2">---- <span class="text-xl font-light opacity-40">PPM</span></div>
                         <div id="statusCO2" class="mb-2 text-[11px] font-black uppercase py-1 px-3 rounded-lg bg-slate-50 dark:bg-slate-800">Status Ar</div>
                     </div>
-                    <p class="text-[10px] text-slate-400 font-medium mt-3 leading-relaxed">O CO₂ indica se o ar está sendo renovado. Níveis altos causam fadiga, perda de concentração e facilitam a transmissão de vírus.</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-3 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-2">
+                        <strong>Alerta Sanitário:</strong> O acúmulo de Gás Carbônico indica que o ambiente está com ar viciado e recirculado. Concentrações elevadas provocam sonolência, cefaleia e aumentam drasticamente a transmissibilidade de patógenos por vias aéreas.
+                    </p>
                 </div>
 
                 <div class="md:col-span-2 grid grid-cols-2 lg:grid-cols-4 gap-3">
                     <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-black text-slate-400 uppercase block">PM0.5 Fumaça / Vírus</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase block">NC 0.5 (Vírus e Bactérias)</span>
                         <span class="text-lg font-black text-slate-900 dark:text-white block mt-1" id="valNC05">--</span>
-                        <span class="text-[8px] text-slate-400 font-mono">pt/cm³</span>
+                        <span class="text-[8px] text-slate-400 font-mono">partículas / cm³</span>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-black text-slate-400 uppercase block">PMPoeira Fina</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase block">NC 1.0 (Fumaça e Fuligem)</span>
                         <span class="text-lg font-black text-slate-900 dark:text-white block mt-1" id="valNC10">--</span>
-                        <span class="text-[8px] text-slate-400 font-mono">pt/cm³</span>
+                        <span class="text-[8px] text-slate-400 font-mono">partículas / cm³</span>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-black text-slate-400 uppercase block">Poluição / Alérgenos</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase block">NC 2.5 (Poeira Fina Atmosférica)</span>
                         <span class="text-lg font-black text-slate-900 dark:text-white block mt-1" id="valNC25">--</span>
-                        <span class="text-[8px] text-slate-400 font-mono">pt/cm³</span>
+                        <span class="text-[8px] text-slate-400 font-mono">partículas / cm³</span>
                     </div>
                     <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-black text-slate-400 uppercase block">Ácaros / Pólen</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase block">NC 10.0 (Ácaros e Pólen)</span>
                         <span class="text-lg font-black text-slate-900 dark:text-white block mt-1" id="valNC100">--</span>
-                        <span class="text-[8px] text-slate-400 font-mono">Partículas/cm³</span>
+                        <span class="text-[8px] text-slate-400 font-mono">partículas / cm³</span>
                     </div>
                 </div>
+
+                <section class="bg-white dark:bg-slate-900 md:col-span-2 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📊</span>
+                        <h3 class="text-xs font-black uppercase tracking-wider">Correlação Inteligente: Massa ($\mu g/m^3$) vs Quantidade ($NC$)</h3>
+                    </div>
+                    <p class="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                        O monitoramento combina duas físicas: a <strong>Massa (PM)</strong> afere o peso total da poluição por metro cúbico exigido por leis como a ANVISA, enquanto a <strong>Quantidade (NC)</strong> conta individualmente micropartículas em suspensão por centímetro cúbico. 
+                    </p>
+                    <div id="alertaInfoCritico" class="hidden p-3 bg-rose-600/10 border border-rose-500/30 rounded-xl text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-start gap-2 animate-pulse">
+                        <span>⚠️</span>
+                        <div>
+                            <strong>ALERTA DE DESCOMPENSAÇÃO FÍSICA:</strong> Níveis críticos detectados. Partículas ultrafinas leves (como vírus) podem estar saturando o ambiente sem alterar expressivamente o peso da massa total, ou uma única partícula massiva (pólen/ácaro) desestabilizou o peso volumétrico. Verifique a triagem técnica imediatamente.
+                        </div>
+                    </div>
+                </section>
 
             </main>
         </div>
