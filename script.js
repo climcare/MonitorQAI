@@ -57,16 +57,19 @@ async function processarCicloMonitoramento() {
 function atualizarInterfaceVisual(relatorio) {
     const v = relatorio.valoresAtuais;
     const t = relatorio.telemetriaAvancada;
-    document.getElementById('valPontoOrvalho').innerText = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'}°C`;
-    // Telemetria Topo
+
+    // Telemetria do Topo
     document.getElementById('txtDeviceId').innerText = relatorio.dispositivoId || '--';
     document.getElementById('txtSignal').innerText = `${t.sinalRede || '--'} dBm`;
     document.getElementById('txtTimestamp').innerText = `⏱️ LIDO EM: ${new Date(relatorio.carimbotempo).toLocaleTimeString('pt-BR')}`;
 
-    // Valores Cards
+    // Valores dos Cards Principais
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : '--.-'}<span class="text-2xl font-light opacity-40">°C</span>`;
     document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : '--.-'}<span class="text-2xl font-light opacity-40">%</span>`;
     document.getElementById('valCO2').innerHTML = `${v.co2 || '----'} <span class="text-xl font-light opacity-40">PPM</span>`;
+    
+    // Injeção do Ponto de Orvalho
+    document.getElementById('valPontoOrvalho').innerText = `${relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-'}°C`;
 
     // Particulados Amigáveis (pt/cm3)
     document.getElementById('valNC05').innerText = t.contagemParticulas.nc0_5 ? t.contagemParticulas.nc0_5.toFixed(0) : '--';
@@ -74,10 +77,18 @@ function atualizarInterfaceVisual(relatorio) {
     document.getElementById('valNC25').innerText = t.contagemParticulas.nc2_5 ? t.contagemParticulas.nc2_5.toFixed(0) : '--';
     document.getElementById('valNC100').innerText = t.contagemParticulas.nc10_0 ? t.contagemParticulas.nc10_0.toFixed(0) : '--';
 
-    // Logica Semafórica Individual de Cards
+    // Lógica Semafórica Granular dos Cards
     pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
     pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
     pintarCard('cardCO2', 'statusCO2', relatorio.analiseIndividual.co2);
+
+    // Controle do Alerta Físico de Relação Massa vs Quantidade
+    const bannerInfo = document.getElementById('alertaInfoCritico');
+    if (relatorio.statusGeral === "CRÍTICO") {
+        bannerInfo.classList.remove('hidden');
+    } else {
+        bannerInfo.classList.add('hidden');
+    }
 
     // Status Geral Semafórico (Barra Superior)
     const panelStatus = document.getElementById('panelStatusGeral');
@@ -88,25 +99,25 @@ function atualizarInterfaceVisual(relatorio) {
         txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE SANITÁRIA";
         document.getElementById('panelTriagem').innerHTML = `
             <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs text-center">
-                ✅ Ar purificado. Nenhuma intervenção necessária.
+                ✅ Ar purificado dentro dos limites OMS. Nenhuma intervenção necessária.
             </div>`;
     } else {
         const critico = relatorio.statusGeral === "CRÍTICO";
         panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all ${critico ? 'bg-rose-600 text-white border-rose-400 animate-pulse' : 'bg-amber-500 text-white border-amber-400'}`;
-        txtStatus.innerText = critico ? "🚨 ALERTA CRÍTICO: RISCO BIOLÓGICO/ESTRUTURAL" : "⚠️ ATENÇÃO: AMBIENTE FORA DOS PADRÕES";
+        txtStatus.innerText = critico ? "🚨 ALERTA CRÍTICO: RISCO BIOLÓGICO/SANITÁRIO DETECTADO" : "⚠️ ATENÇÃO: AMBIENTE FORA DOS PADRÕES OPERACIONAIS";
 
-        // Gerador de Alertas OMS Dinâmico
+        // Gerador Dinâmico de Triagens com Mitigação Detalhada
         let htmlAlertas = "";
         relatorio.violacoes.forEach(erro => {
             htmlAlertas += `
                 <div class="bg-white dark:bg-slate-900 border-l-8 ${erro.gravidade === 'CRÍTICO' ? 'border-rose-600' : 'border-amber-500'} rounded-2xl p-4 shadow-sm space-y-2">
                     <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter">
-                        <span class="${erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500'}">PROBLEMA: ${erro.parametro}</span>
+                        <span class="${erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500'}">ANOMALIA: ${obterNomeTraduzido(erro.parametro)}</span>
                         <span class="text-slate-400">VALOR: ${erro.valor}${erro.unidade}</span>
                     </div>
                     <p class="text-xs font-bold text-slate-700 dark:text-slate-200">${obterMensagemOMS(erro.parametro, erro.valor)}</p>
                     <div class="text-[11px] font-mono font-bold text-sky-600 dark:text-sky-400 mt-2 uppercase underline">
-                        👉 Ação: ${obterMitigacaoOMS(erro.parametro)}
+                        👉 Protocolo Técnico: ${obterMitigacaoOMS(erro.parametro)}
                     </div>
                 </div>
             `;
@@ -136,22 +147,41 @@ function pintarCard(cardId, statusId, nivel) {
     }
 }
 
+function obterNomeTraduzido(param) {
+    const nomes = {
+        "CO2": "CO₂ (Gás Carbônico)",
+        "CO": "CO (Monóxido de Carbono)",
+        "VOC": "TVOC (Compostos Orgânicos Voláteis / Químicos)",
+        "PM2.5": "PM2.5 (Partículas Finas / Fumaça e Vírus)",
+        "PM10": "PM10 (Partículas Grossas / Poeira e Pólen)",
+        "Temperatura": "Temperatura Ambiente",
+        "Umidade": "Umidade Relativa"
+    };
+    return nomes[param] || param;
+}
+
 function obterMensagemOMS(param, valor) {
     const mensagens = {
-        "CO2": `🚨 ALERTA OMS: Nível de ${valor} PPM é perigoso. Reduz o oxigênio no cérebro, causa sonolência e indica ar viciado e contaminado.`,
-        "Temperatura": "Meta de Estabilidade: Temperatura fora da zona de conforto térmico e preservação biológica.",
-        "Umidade": "Risco Sanitário: Umidade inadequada facilita a proliferação de ácaros e ressecamento de mucosas.",
-        "PM2.5": "🚨 ALERTA OMS: Ar carregado de partículas finas que penetram diretamente nos pulmões e corrente sanguínea."
+        "CO2": `🚨 EXCESSO DE CO₂ (GÁS CARBÔNICO) EM ${valor} PPM: O limite seguro da OMS foi violado. Indica confinamento severo do ar ambiente, queda na saturação de oxigênio cognitivo e alta probabilidade de proliferação cruzada de patógenos aéreos.`,
+        "CO": `💀 TOXICIDADE POR CO (MONÓXIDO DE CARBONO) EM ${valor} PPM: Gás asfixiante mecânico invisível e inodoro. Risco letal iminente por saturação celular de hemoglobinas.`,
+        "VOC": `⚠️ SATURAÇÃO DE TVOC (QUÍMICOS VOLÁTEIS) EM ${valor}: Saturação química oriunda de desinfetantes pesados, tintas ou solventes. Risco de cefaleia química e irritação de mucosas respiratórias.`,
+        "PM2.5": `😷 ALERTA PM2.5 (VÍRUS, BACTÉRIAS E FUMAÇA) EM ${valor} µg/m³: Partículas com diâmetro molecular ultrafino capaz de romper a barreira alveolar e circular livremente no fluxo sanguíneo do paciente.`,
+        "PM10": `🍂 ALERTA PM10 (POEIRA ATMOSFÉRICA E PÓLEN) EM ${valor} µg/m³: Massa volumétrica de poeiras grossas e alérgenos em suspensão saturando o sistema filtrante do local.`,
+        "Temperatura": `🌡️ DESCONFORTO TÉRMICO EM ${valor}°C: Ambiente fora do padrão operacional estipulado para a estabilidade metabólica humana e preservação de insumos.`,
+        "Umidade": `💧 ANOMALIA HIGROMÉTRICA EM ${valor}%: Índices elevados aceleram esporos de fungos/mofo; índices secos comprometem a barreira mucosa protetora nasal.`
     };
-    return mensagens[param] || "Ambiente fora dos padrões regulatórios de saúde.";
+    return mensagens[param] || "Substância operacional fora das metas sanitárias regulamentadas.";
 }
 
 function obterMitigacaoOMS(param) {
     const acoes = {
-        "CO2": "Abrir janelas ou forçar captação de ar externo no sistema HVAC imediatamente.",
-        "Temperatura": "Ajustar termostato e verificar obstrução de dutos de ar.",
-        "Umidade": "Ligar desumidificador ou ajustar vazão de ar condicionado.",
-        "PM2.5": "Ativar purificador HEPA e verificar vedação de portas e janelas."
+        "CO2": "EVACUAR PARCIALMENTE OU ABRIR TODAS AS JANELAS IMEDIATAMENTE. Ativar admissão de ar externo nas centrais HVAC.",
+        "CO": "EVACUAÇÃO COMPLETA IMEDIATA. Cortar fontes de combustão e acionar Brigada de Emergência.",
+        "VOC": "Ligar sistemas de exaustão forçada no nível máximo e interromper aplicação de produtos de limpeza industriais.",
+        "PM2.5": "Ativar purificadores autônomos equipados com barreiras de filtragem absoluta HEPA. Verificar vedações de janelas.",
+        "PM10": "Realizar higienização úmida imediata do piso para decantação de poeiras e inspecionar filtros mecânicos G4 do prédio.",
+        "Temperatura": "Regular os parâmetros de setpoint no termostato central ou checar janelas abertas sabotando o sistema.",
+        "Umidade": "Se alta, acionar o ciclo de desumidificação ativa por serpentina do HVAC. Se baixa, acionar umidificadores ultrassônicos."
     };
-    return acoes[param] || "Realizar vistoria técnica no ambiente.";
+    return acoes[param] || "Acionar corpo de engenharia predial técnica para intervenção direta.";
 }
