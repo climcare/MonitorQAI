@@ -132,40 +132,7 @@ function analisarLeituraQAI(leitura) {
         });
     }
 
-    // Consolidação de Gravidade
-    const possuiCritico = diagnostico.violacoes.some(v => v.gravidade === "CRÍTICO");
-    const possuiAtencao = diagnostico.violacoes.some(v => v.gravidade === "ATENÇÃO");
-
-    if (possuiCritico) {
-        diagnostico.statusGeral = "CRÍTICO";
-    } else if (possuiAtencao) {
-        diagnostico.statusGeral = "ATENÇÃO";
-    }
-
-    // Mapeamento dos Valores Atuais Estáveis
-    diagnostico.valoresAtuais = {
-        temperature: leitura.temperature,
-        humidity: leitura.humidity,
-        co2: leitura.co2,
-        co: leitura.co,
-        vocIndex: leitura.vocIndex,
-        pm25: leitura.pm25,
-        pm10: leitura.pm10
-    };
-
-    // Estruturação da Telemetria Avançada para Engenharia
-    diagnostico.telemetriaAvancada = {
-        contagemParticulas: {
-            nc0_5: leitura.nc0_5,
-            nc1_0: leitura.nc1_0,
-            nc2_5: leitura.nc2_5,
-            nc10_0: leitura.nc10_0
-        },
-        tamanhoTipico: leitura.typicalSize,
-        sinalRede: leitura.signalStrength,
-        nox: leitura.noxIndex
-    };
-// ====================================================================
+    // ====================================================================
     // CONSOLIDAÇÃO DE GRAVIDADE GERAL
     // ====================================================================
     const possuiCritico = diagnostico.violacoes.some(v => v.gravidade === "CRÍTICO");
@@ -202,22 +169,18 @@ function analisarLeituraQAI(leitura) {
     };
 
     // ====================================================================
-    // MÓDULO NOVO: ANÁLISE INDIVIDUAL PARA OS CARDS SEMAFÓRICOS
+    // MÓDULO: ANÁLISE INDIVIDUAL PARA OS CARDS SEMAFÓRICOS
     // ====================================================================
-    const temp = leitura.temperature;
-    const hum = leitura.humidity;
-
     diagnostico.analiseIndividual = {
-        // Regra da Temperatura: Dentro da meta = BOM. Acima de 26°C = CRÍTICO (risco biológico). Fora disso = ALERTA.
+        // Regra da Temperatura: Dentro da meta = BOM. Acima de 26°C = CRÍTICO. Fora disso = ALERTA.
         temperatura: (temp >= NORMAS_QAI.conforto.temperature.min && temp <= NORMAS_QAI.conforto.temperature.max) ? "BOM" : (temp > 26) ? "CRÍTICO" : "ALERTA",
         
         // Regra da Umidade: Dentro da meta = BOM. Fora = ALERTA.
         umidade: (hum >= NORMAS_QAI.conforto.humidity.min && hum <= NORMAS_QAI.conforto.humidity.max) ? "BOM" : "ALERTA",
         
-        // Regra do CO2: Até 800 PPM = EXCELENTE/BOM. Acima do limite da OMS (1000) = CRÍTICO. Entre eles = ALERTA.
+        // Regra do CO2: Até 800 PPM = BOM. Acima de 1000 = CRÍTICO. Entre eles = ALERTA.
         co2: (leitura.co2 <= 800) ? "BOM" : (leitura.co2 > NORMAS_QAI.gases.co2.max) ? "CRÍTICO" : "ALERTA"
     };
 
-    // Retorna o objeto completo com os novos status individuais acoplados
     return diagnostico;
 }
