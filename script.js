@@ -120,7 +120,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         }
     }
 
-    // Sintomas Clínicos
+    // Sintomas Clínicos - Ícone Corrigido de Termômetro para Pulmão/Máscara no Desconforto Respiratório
     if (relatorio.sintomas) {
         const s = relatorio.sintomas;
         const atualizarSintoma = (idPct, idBar, idIco, valor, emojiAlto, emojiBaixo) => {
@@ -130,7 +130,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         };
         atualizarSintoma('txtPctFadiga', 'barSintomaFadiga', 'icoSintomaFadiga', s.fadiga, "🥱", "💤");
         atualizarSintoma('txtPctAlergia', 'barSintomaAlergia', 'icoSintomaAlergia', s.alergia, "🚨", "🤧");
-        atualizarSintoma('txtPctDesconforto', 'barSintomaDesconforto', 'icoSintomaDesconforto', s.desconforto, "🥵", "🌡️");
+        atualizarSintoma('txtPctDesconforto', 'barSintomaDesconforto', 'icoSintomaDesconforto', s.desconforto, "🥵", "🫁");
     }
 
     // Valores dos Cards Principais
@@ -187,22 +187,24 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         domElements.alertaInfoCritico.classList.toggle('hidden', relatorio.statusGeral !== "CRÍTICO");
     }
 
-    // Painel de Status Geral e Triagem Normativa (IDs Corrigidos para casar com o HTML)
+    // Painel de Status Geral e Triagem Normativa (Otimização de paddings py-1.5 e remoção de redundância de emojis)
     const { panelStatusGeral, txtStatusGeral, panelTriagem } = domElements;
     if (panelStatusGeral && txtStatusGeral && panelTriagem) {
         if (relatorio.statusGeral === "CONFORME") {
-            panelStatusGeral.className = "md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
+            panelStatusGeral.className = "md:col-span-7 rounded-2xl py-1.5 px-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start min-h-[44px]";
             txtStatusGeral.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
-            txtStatusGeral.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
+            txtStatusGeral.innerText = "AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
             panelTriagem.innerHTML = `
                 <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-medium text-xs text-center leading-relaxed">
-                    ✅ Parâmetros operacionais em total conformidade normativa. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
+                    ✅ Parâmetros operacionais em total conformidade normative. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
                 </div>`;
         } else {
             const critico = relatorio.statusGeral === "CRÍTICO";
-            panelStatusGeral.className = `md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
+            panelStatusGeral.className = `md:col-span-7 rounded-2xl py-1.5 px-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start min-h-[44px] ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
             txtStatusGeral.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
-            txtStatusGeral.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
+            
+            // Texto limpo sem emojis repetidos (o HTML ou CSS já cuida do ícone do container se houver)
+            txtStatusGeral.innerText = critico ? "DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
             let htmlAlertas = `
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl space-y-3 shadow-sm">
@@ -237,7 +239,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                                 <div class="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-800/80 space-y-2">
                                     <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">${obterMensagemAnvisa(erro.parametro, erro.valor)}</p>
                                     <div class="bg-sky-500/[0.06] rounded-xl p-3 border border-sky-500/10">
-                                        <p class="text-[9px] font-mono font-black text-sky-600 dark:text-sky-400 uppercase tracking-wider">🛠️ PROTOCOLO DE MITIGAÇÃO HIGIÊNICA:</p>
+                                        <p class="text-[9px] font-mono font-black text-sky-600 dark:text-sky-400 uppercase tracking-wider">🛠️ PROTOCOLO DE MITIGAÇÃO :</p>
                                         <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1 leading-relaxed">${obterMitigacaoAnvisa(erro.parametro)}</p>
                                     </div>
                                 </div>
