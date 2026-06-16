@@ -44,7 +44,7 @@
                     <h1 class="text-sm sm:text-base font-black tracking-tight uppercase leading-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
                         Monitoramento Biológico & Qualidade do Ar
                     </h1>
-                    <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 mt-1 text.5 font-bold font-mono text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[11px]">
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 mt-1 font-bold font-mono text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[11px]">
                         <span>DISPOSITIVO: <span id="txtDeviceId" class="text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">--</span></span>
                         <span>WI-FI: <span id="txtSignal" class="text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">-- dBm</span></span>
                         <span class="text-emerald-600 dark:text-emerald-400 font-sans flex items-center gap-1">
@@ -60,7 +60,6 @@
         </header>
 
         <section class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            
             <div class="md:col-span-5 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-800/60 flex items-center gap-3 sm:gap-4 transition-all">
                 <div id="scoreContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-emerald-500 flex flex-col items-center justify-center bg-emerald-500/5 shrink-0 transition-all">
                     <span id="lblScoreNumero" class="text-xl sm:text-2xl font-black tracking-tighter text-slate-900 dark:text-white">--</span>
@@ -79,19 +78,17 @@
 
             <div id="panelStatusGeral" class="md:col-span-7 rounded-2xl p-4 shadow-sm border transition-all duration-300 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5 text-left">
-                    <span class="text-lg">⚠️</span>
+                    <span>⚠️</span>
                     <div id="txtStatusGeral" class="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-tight">
                         Iniciando Varredura Ambiental...
                     </div>
                 </div>
             </div>
-
         </section>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
             <main class="lg:col-span-8 space-y-4">
-                
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
@@ -131,7 +128,6 @@
                 </div>
 
                 <section class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200/60 dark:border-slate-800 space-y-4">
-                    
                     <div id="panelTriagemMassaQuantidade"></div>
 
                     <div id="alertaInfoCritico" class="hidden p-3.5 bg-rose-500/10 dark:bg-rose-500/[0.03] border border-rose-500/20 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 flex items-start gap-3">
@@ -152,7 +148,7 @@
                         </div>
 
                         <div id="helpParticulas" class="hidden p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/40 dark:border-slate-800/60 rounded-xl text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                            A <strong class="text-slate-700 dark:text-slate-200">Massa</strong> indica a concentration acumulada no metro cúbico. A <strong class="text-slate-700 dark:text-slate-200">Contagem</strong> detalha o perfil volumétrico discreto ($pt/cm^3$) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
+                            A <strong class="text-slate-700 dark:text-slate-200">Massa</strong> indica a concentração acumulada no metro cúbico. A <strong class="text-slate-700 dark:text-slate-200">Contagem</strong> detalha o perfil volumétrico discreto ($pt/cm^3$) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
                         </div>
 
                         <div id="helpOrvalho" class="hidden p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/40 dark:border-slate-800/60 rounded-xl text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
@@ -160,11 +156,9 @@
                         </div>
                     </div>
                 </section>
-
             </main>
 
             <div class="lg:col-span-4 space-y-4">
-                
                 <div class="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-3.5">
                     <div>
                         <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-wider">🫁 Impacto Clínico Projetado (Ocupantes)</h3>
@@ -210,13 +204,12 @@
                     </h2>
                     <div id="panelTriagem" class="space-y-3"></div>
                 </div>
-
             </div>
 
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0"></script>
     <script src="analysis.js"></script>
     <script src="script.js"></script>
 </body>
