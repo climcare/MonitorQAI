@@ -13,7 +13,7 @@
                 extend: {
                     colors: {
                         slate: {
-                            750: '#1e293b', // Suporte para hover escuro customizado
+                            750: '#1e293b',
                         }
                     },
                     fontFamily: {
@@ -33,10 +33,10 @@
 </head>
 <body class="bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 font-sans antialiased min-h-screen p-3 sm:p-6 transition-colors duration-300">
 
-    <div class="max-w-[1440px] mx-auto space-y-5">
+    <div class="max-w-[1440px] mx-auto space-y-4">
 
         <header class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3.5 text-center sm:text-left">
+            <div class="flex items-center gap-3.5 text-center sm:text-left w-full sm:w-auto">
                 <div class="bg-emerald-500/10 p-2.5 rounded-xl hidden sm:block">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse block"></span>
                 </div>
@@ -44,10 +44,12 @@
                     <h1 class="text-sm sm:text-base font-black tracking-tight uppercase leading-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
                         Monitoramento Biológico & Qualidade do Ar
                     </h1>
-                    <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 mt-1 text-[10px] font-bold font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                        <span>DISPOSITIVO: <span id="txtDeviceId" class="text-slate-700 dark:text-slate-300">--</span></span>
-                        <span>WI-FI: <span id="txtSignal" class="text-slate-700 dark:text-slate-300">-- dBm</span></span>
-                        <span id="txtTimestamp" class="text-emerald-600 dark:text-emerald-400 font-sans">⏱️ SINCRONIZANDO...</span>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 mt-1 text.5 font-bold font-mono text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[11px]">
+                        <span>DISPOSITIVO: <span id="txtDeviceId" class="text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">--</span></span>
+                        <span>WI-FI: <span id="txtSignal" class="text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">-- dBm</span></span>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-sans flex items-center gap-1">
+                            ⏱️ <span id="txtDataAtual">16/06/2026</span> às <span id="txtTimestamp" class="font-bold">--:--:--</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -75,52 +77,55 @@
                 </div>
             </div>
 
-            <div id="panelStatusGeral" class="md:col-span-7 rounded-2xl p-4 text-center md:text-left shadow-sm border transition-all duration-300 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex items-center justify-center md:justify-start">
-                <div id="txtStatusGeral" class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-400 w-full">
-                    Iniciando Varredura Ambiental...
+            <div id="panelStatusGeral" class="md:col-span-7 rounded-2xl p-4 shadow-sm border transition-all duration-300 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 text-left">
+                    <span class="text-lg">⚠️</span>
+                    <div id="txtStatusGeral" class="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-tight">
+                        Iniciando Varredura Ambiental...
+                    </div>
                 </div>
             </div>
 
         </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
-            <main class="lg:col-span-8 space-y-5">
+            <main class="lg:col-span-8 space-y-4">
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                    <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
                             <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🌡️ Temperatura</span>
                             <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">20~24°C</span>
                         </div>
-                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-lg font-light opacity-40">°C</span></div>
+                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-lg font-light opacity-40">°C</span></div>
                         <div id="statusTemp" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
 
-                    <div id="cardHum" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                    <div id="cardHum" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
                             <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💧 Umidade</span>
                             <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">40~65%</span>
                         </div>
-                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-lg font-light opacity-40">%</span></div>
+                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-lg font-light opacity-40">%</span></div>
                         <div id="statusHum" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
 
-                    <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                    <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
                             <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🍃 Ar Abafado</span>
                             <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">1000 PPM</span>
                         </div>
-                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-sm font-light opacity-40">PPM</span></div>
+                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-sm font-light opacity-40">PPM</span></div>
                         <div id="statusCO2" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
 
-                    <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                    <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
                             <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💦 Pt. Orvalho</span>
                             <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">Dinâmico</span>
                         </div>
-                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-sm font-light opacity-40">°C</span></div>
+                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-sm font-light opacity-40">°C</span></div>
                         <div id="statusOrvalho" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
                 </div>
@@ -132,7 +137,26 @@
                     <div id="alertaInfoCritico" class="hidden p-3.5 bg-rose-500/10 dark:bg-rose-500/[0.03] border border-rose-500/20 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 flex items-start gap-3">
                         <span class="text-base shrink-0 mt-0.5">⚠️</span>
                         <div class="leading-relaxed">
-                            <strong class="font-bold">ALERTA DE DESCOMPENSAÇÃO FÍSICA:</strong> Níveis críticos detectados. Partículas ultrafinas leves (como vírus) podem estar saturando o ambiente sem alterar expressivamente o peso total medido, ou uma única partícula maior (como pólen) gerou instabilidade volumétrica local. Verifique a triagem técnica imediatamente.
+                            <strong class="font-bold">ALERTA DE DESCOMPENSAÇÃO FÍSICA:</strong> Níveis críticos detectados. Partículas ultrafinas leves (como vírus) podem estar saturando o ambiente sem alterar expressivamente o peso total medido.
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 dark:border-slate-800/80 pt-4 space-y-2">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="document.getElementById('helpParticulas').classList.toggle('hidden')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5">
+                                💡 Entendimento de Partículas <span class="opacity-50">▾</span>
+                            </button>
+                            <button onclick="document.getElementById('helpOrvalho').classList.toggle('hidden')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5">
+                                💧 O que é Ponto de Orvalho? <span class="opacity-50">▾</span>
+                            </button>
+                        </div>
+
+                        <div id="helpParticulas" class="hidden p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/40 dark:border-slate-800/60 rounded-xl text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                            A <strong class="text-slate-700 dark:text-slate-200">Massa</strong> indica a concentration acumulada no metro cúbico. A <strong class="text-slate-700 dark:text-slate-200">Contagem</strong> detalha o perfil volumétrico discreto ($pt/cm^3$) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
+                        </div>
+
+                        <div id="helpOrvalho" class="hidden p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/40 dark:border-slate-800/60 rounded-xl text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                            É a temperatura exata na qual o ar atinge a sua saturação máxima de umidade (100% de Umidade Relativa). Fisicamente, ocorre quando o ar quente do ambiente entra em contato com qualquer superfície ou massa de ar que esteja igual ou abaixo dessa temperatura limite, forçando o vapor a se condensar e se transformar em água líquida (orvalho).
                         </div>
                     </div>
                 </section>
@@ -170,7 +194,7 @@
 
                         <div class="space-y-1">
                             <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
-                                <span class="flex items-center gap-1.5"><span id="icoSintomaDesconforto" class="text-sm">🌡️</span> Desconforto Respiratório</span>
+                                <span class="flex items-center gap-1.5"><span id="icoSintomaDesconforto" class="text-sm">🫁</span> Desconforto Respiratório</span>
                                 <span id="txtPctDesconforto" class="font-mono text-[11px] text-slate-400">0%</span>
                             </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200/20">
