@@ -1,183 +1,155 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR" class="h-full dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Monitoramento - QAI Clínico</title>
+    <title>QAI - Inteligência Ambiental OMS</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
+        tailwind.config = { 
             darkMode: 'class',
             theme: {
                 extend: {
+                    colors: {
+                        slate: {
+                            750: '#1e293b', // Suporte para hover escuro customizado
+                        }
+                    },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+    </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans min-h-screen transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 font-sans antialiased min-h-screen p-3 sm:p-6 transition-colors duration-300">
 
-    <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm">
-            <div>
-                <h1 class="text-xl font-black tracking-tight text-slate-950 dark:text-white">SISTEMA INTEGRADO QAI</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Monitoramento Ambiental de Alta Precisão & Conformidade Normativa</p>
+    <div class="max-w-[1440px] mx-auto space-y-5">
+
+        <header class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3.5 text-center sm:text-left">
+                <div class="bg-emerald-500/10 p-2.5 rounded-xl hidden sm:block">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse block"></span>
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-black tracking-tight uppercase leading-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
+                        Monitoramento Biológico & Qualidade do Ar
+                    </h1>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 mt-1 text-[10px] font-bold font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        <span>DISPOSITIVO: <span id="txtDeviceId" class="text-slate-700 dark:text-slate-300">--</span></span>
+                        <span>WI-FI: <span id="txtSignal" class="text-slate-700 dark:text-slate-300">-- dBm</span></span>
+                        <span id="txtTimestamp" class="text-emerald-600 dark:text-emerald-400 font-sans">⏱️ SINCRONIZANDO...</span>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
-                <button onclick="document.documentElement.classList.remove('dark')" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all dark:text-slate-400 bg-white dark:bg-transparent shadow-sm dark:shadow-none text-slate-950">Light</button>
-                <button onclick="document.documentElement.classList.add('dark')" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 dark:text-white dark:bg-slate-900 dark:shadow-sm">Dark</button>
-            </div>
+            
+            <button id="btnAlternarTema" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all active:scale-95 flex items-center justify-center gap-2">
+                <span id="icoTema">🌙</span> <span id="txtTema">MODO NOTURNO</span>
+            </button>
         </header>
 
         <section class="grid grid-cols-1 md:grid-cols-12 gap-4">
             
-            <div class="md:col-span-5 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200/60 dark:border-slate-800/80 flex items-center gap-3 sm:gap-4 transition-all">
+            <div class="md:col-span-5 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-800/60 flex items-center gap-3 sm:gap-4 transition-all">
                 <div id="scoreContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-emerald-500 flex flex-col items-center justify-center bg-emerald-500/5 shrink-0 transition-all">
-                    <span id="lblScoreNumero" class="text-xl sm:text-2xl font-black tracking-tighter text-slate-900 dark:text-white">100</span>
+                    <span id="lblScoreNumero" class="text-xl sm:text-2xl font-black tracking-tighter text-slate-900 dark:text-white">--</span>
                     <span class="text-[7px] sm:text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest -mt-1">QAI</span>
                 </div>
                 <div class="w-full space-y-1">
                     <div class="flex justify-between items-center gap-1">
-                        <span class="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Qualidade do Ar Interior</span>
-                        <span id="lblScoreStatus" class="text-[9px] sm:text-[10px] font-black uppercase text-emerald-500 shrink-0">EXCELENTE</span>
+                        <span class="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Índice Geral de Qualidade</span>
+                        <span id="lblScoreStatus" class="text-[9px] sm:text-[10px] font-black uppercase text-emerald-500 shrink-0">ANALISANDO</span>
                     </div>
                     <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 sm:h-2 rounded-full overflow-hidden">
-                        <div id="barScoreProgresso" class="bg-emerald-500 h-full transition-all duration-700" style="width: 100%;"></div>
+                        <div id="barScoreProgresso" class="bg-emerald-500 h-full transition-all duration-700" style="width: 0%;"></div>
                     </div>
                 </div>
             </div>
 
             <div id="panelStatusGeral" class="md:col-span-7 rounded-2xl p-4 text-center md:text-left shadow-sm border transition-all duration-300 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex items-center justify-center md:justify-start">
-                <div id="txtStatusGeral" class="text-xs font-bold uppercase tracking-wider text-slate-400 w-full">
+                <div id="txtStatusGeral" class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-400 w-full">
                     Iniciando Varredura Ambiental...
                 </div>
             </div>
 
         </section>
 
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
             
-            <div class="lg:col-span-2 space-y-6">
+            <main class="lg:col-span-8 space-y-5">
                 
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-4">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Gases & Conforto Térmico</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Dióxido de Carbono (CO₂)</span>
-                            <div class="text-2xl font-black tracking-tight mt-1" id="valCO2">0 <span class="text-xs font-normal text-slate-400">ppm</span></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                        <div class="flex justify-between items-start gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🌡️ Temperatura</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">20~24°C</span>
                         </div>
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Temperatura Ambient.</span>
-                            <div class="text-2xl font-black tracking-tight mt-1" id="valTemperature">0.0 <span class="text-xs font-normal text-slate-400">°C</span></div>
+                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-lg font-light opacity-40">°C</span></div>
+                        <div id="statusTemp" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
+                    </div>
+
+                    <div id="cardHum" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                        <div class="flex justify-between items-start gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💧 Umidade</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">40~65%</span>
                         </div>
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Umidade Relativa</span>
-                            <div class="text-2xl font-black tracking-tight mt-1" id="valHumidity">0 <span class="text-xs font-normal text-slate-400">%</span></div>
+                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-lg font-light opacity-40">%</span></div>
+                        <div id="statusHum" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
+                    </div>
+
+                    <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                        <div class="flex justify-between items-start gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🍃 Ar Abafado</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">1000 PPM</span>
                         </div>
+                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-sm font-light opacity-40">PPM</span></div>
+                        <div id="statusCO2" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
+                    </div>
+
+                    <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
+                        <div class="flex justify-between items-start gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💦 Pt. Orvalho</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">Dinâmico</span>
+                        </div>
+                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-sm font-light opacity-40">°C</span></div>
+                        <div id="statusOrvalho" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-4">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Material Particulado por Massa (Gravimetria Estimada)</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PM 1.0 (Ultrafinas)</span>
-                            <div class="text-2xl font-black tracking-tight mt-1" id="valPM10_massa">0 <span class="text-xs font-normal text-slate-400">µg/m³</span></div>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PM 2.5 (Finas - OMS)</span>
-                            <div class="text-2xl font-black tracking-tight mt-1" id="valPM25_massa">0 <span class="text-xs font-normal text-slate-400">µg/m³</span></div>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PM 10 (Inaláveis - ANVISA)</span>
-                            <div class="text-2xl font-black tracking-tight mt-1" id="valPM100_massa">0 <span class="text-xs font-normal text-slate-400">µg/m³</span></div>
+                <section class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200/60 dark:border-slate-800 space-y-4">
+                    
+                    <div id="panelTriagemMassaQuantidade"></div>
+
+                    <div id="alertaInfoCritico" class="hidden p-3.5 bg-rose-500/10 dark:bg-rose-500/[0.03] border border-rose-500/20 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 flex items-start gap-3">
+                        <span class="text-base shrink-0 mt-0.5">⚠️</span>
+                        <div class="leading-relaxed">
+                            <strong class="font-bold">ALERTA DE DESCOMPENSAÇÃO FÍSICA:</strong> Níveis críticos detectados. Partículas ultrafinas leves (como vírus) podem estar saturando o ambiente sem alterar expressivamente o peso total medido, ou uma única partícula maior (como pólen) gerou instabilidade volumétrica local. Verifique a triagem técnica imediatamente.
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-4">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Contagem Numérica de Partículas (Concentração Clínica)</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">NC 0.5 µm (Aerossóis)</span>
-                            <div class="text-xl font-black tracking-tight mt-1" id="valPM05_count">0 <span class="text-[10px] font-normal text-slate-400">part/cm³</span></div>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">NC 1.0 µm (Núcleos Gotículas)</span>
-                            <div class="text-xl font-black tracking-tight mt-1" id="valPM10_count">0 <span class="text-[10px] font-normal text-slate-400">part/cm³</span></div>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-900">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">NC 2.5 µm (Poeira Biológica)</span>
-                            <div class="text-xl font-black tracking-tight mt-1" id="valPM25_count">0 <span class="text-[10px] font-normal text-slate-400">part/cm³</span></div>
-                        </div>
-                    </div>
-                </div>
+            </main>
 
+            <div class="lg:col-span-4 space-y-3">
+                <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">
+                    Triagem e Resposta Rápida OMS
+                </h2>
+                <div id="panelTriagem" class="space-y-3"></div>
             </div>
 
-            <div class="space-y-6">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Triagem Normativa Individual</h2>
-                        <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded font-bold uppercase">Tempo Real</span>
-                    </div>
-
-                    <div class="space-y-2.5">
-                        <details class="group bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-900 overflow-hidden" open>
-                            <summary class="flex justify-between items-center p-3 cursor-pointer select-none">
-                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Dióxido de Carbono (CO₂)</span>
-                                <span id="badgeCO2" class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-200 text-slate-600">AGUARDANDO</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-900/50 space-y-1 bg-white/50 dark:bg-black/10">
-                                <p><strong>Padrão ANVISA (RE 09):</strong> Limite máximo recomendado de <span class="text-slate-900 dark:text-white font-medium">1000 ppm</span> para ambientes climatizados artificiais.</p>
-                                <p><strong>Indicador Clínico:</strong> Níveis acima de 1000 ppm apontam para taxa de renovação de ar inadequada, gerando sonolência e fadiga cognitiva.</p>
-                            </div>
-                        </details>
-
-                        <details class="group bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-900 overflow-hidden">
-                            <summary class="flex justify-between items-center p-3 cursor-pointer select-none">
-                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Particulados por Massa (PM)</span>
-                                <span id="badgePM" class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-200 text-slate-600">AGUARDANDO</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-900/50 space-y-1 bg-white/50 dark:bg-black/10">
-                                <p><strong>PM 10 (ANVISA):</strong> Teto máximo rigoroso de <span class="text-slate-900 dark:text-white font-medium">50 µg/m³</span> para ar interior de uso público.</p>
-                                <p><strong>PM 2.5 (Diretriz OMS):</strong> Média máxima diária recomendada de <span class="text-slate-900 dark:text-white font-medium">15 µg/m³</span>. Partículas finas rompem a barreira pulmonar diretamente para a corrente sanguínea.</p>
-                            </div>
-                        </details>
-
-                        <details class="group bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-900 overflow-hidden">
-                            <summary class="flex justify-between items-center p-3 cursor-pointer select-none">
-                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Concentração NC 0.5 / NC 1.0</span>
-                                <span id="badgeNC" class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-200 text-slate-600">AGUARDANDO</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-900/50 space-y-1 bg-white/50 dark:bg-black/10">
-                                <p><strong>NC 0.5 (Limite Seguro):</strong> Alerta ativo caso ultrapasse <span class="text-slate-900 dark:text-white font-medium">500 part/cm³</span>.</p>
-                                <p><strong>Mapeamento Clínico:</strong> Partículas menores de 1.0 mícron permanecem em suspensão por horas, atuando como vetores para vírus e bactérias em ambientes sem filtragem HEPA.</p>
-                            </div>
-                        </details>
-
-                        <details class="group bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-900 overflow-hidden">
-                            <summary class="flex justify-between items-center p-3 cursor-pointer select-none">
-                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Conforto Térmico</span>
-                                <span id="badgeConforto" class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-200 text-slate-600">AGUARDANDO</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-900/50 space-y-1 bg-white/50 dark:bg-black/10">
-                                <p><strong>Temperatura:</strong> Operação ideal recomendada entre <span class="text-slate-900 dark:text-white font-medium">20°C e 24°C</span> no verão brasileiro.</p>
-                                <p><strong>Umidade Relativa:</strong> Faixa de conformidade entre <span class="text-slate-900 dark:text-white font-medium">40% e 60%</span>. Umidades abaixo de 40% ressecam mucosas protetoras; acima de 65% aceleram a proliferação de esporos de fungos (mofo).</p>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+        </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="analysis.js"></script>
     <script src="script.js"></script>
 </body>
