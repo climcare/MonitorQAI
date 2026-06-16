@@ -1,82 +1,102 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full">
+<html lang="pt-BR" class="h-full dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QAI - Inteligência Ambiental OMS</title>
-    <link class="rounded-full" rel="icon" href="data:,">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class' }
+        tailwind.config = { 
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
     </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+    </style>
 </head>
-<body class="bg-sky-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased min-h-screen p-3 sm:p-6 transition-colors duration-500">
+<body class="bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 font-sans antialiased min-h-screen p-3 sm:p-6 transition-colors duration-300">
 
-    <div class="max-w-[1440px] mx-auto space-y-4">
+    <div class="max-w-[1440px] mx-auto space-y-5">
 
-        <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-slate-200/60 dark:border-slate-800 flex flex-col lg:flex-row justify-between items-center gap-4">
-            <div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-                <div class="bg-emerald-500/10 p-2 rounded-xl">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse block"></span>
+        <header class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3.5 text-center sm:text-left">
+                <div class="bg-emerald-500/10 p-2.5 rounded-xl hidden sm:block">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse block"></span>
                 </div>
                 <div>
-                    <h1 class="text-base font-black tracking-tight uppercase leading-tight">Monitoramento Biológico & Qualidade do Ar</h1>
-                    <div class="flex flex-wrap justify-center sm:justify-start gap-3 mt-1 text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest">
-                        <span>ID DISPOSITIVO: <span id="txtDeviceId" class="text-slate-600 dark:text-slate-300">--</span></span>
-                        <span>SINAL WI-FI: <span id="txtSignal" class="text-slate-600 dark:text-slate-300">-- dBm</span></span>
-                        <span id="txtTimestamp" class="text-emerald-600">⏱️ SINCRONIZANDO...</span>
+                    <h1 class="text-sm sm:text-base font-black tracking-tight uppercase leading-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
+                        Monitoramento Biológico & Qualidade do Ar
+                    </h1>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 mt-1 text-[10px] font-bold font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        <span>DISPOSITIVO: <span id="txtDeviceId" class="text-slate-700 dark:text-slate-300">--</span></span>
+                        <span>WI-FI: <span id="txtSignal" class="text-slate-700 dark:text-slate-300">-- dBm</span></span>
+                        <span id="txtTimestamp" class="text-emerald-600 dark:text-emerald-400 font-sans">⏱️ SINCRONIZANDO...</span>
                     </div>
                 </div>
             </div>
             
-            <button id="btnAlternarTema" class="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-black shadow-sm border border-slate-200 dark:border-slate-700 hover:scale-105 transition-all">
+            <button id="btnAlternarTema" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all active:scale-95 flex items-center justify-center gap-2">
                 <span id="icoTema">🌙</span> <span id="txtTema">MODO NOTURNO</span>
             </button>
         </header>
 
-       <section id="panelStatusGeral" class="rounded-2xl p-4 text-center shadow-md border-2 transition-all duration-500 bg-white dark:bg-slate-900 border-white dark:border-slate-800">
-    <div id="txtStatusGeral" class="text-base font-black uppercase tracking-wider text-slate-400">Iniciando Varredura Ambiental...</div>
+        <section id="panelStatusGeral" class="rounded-2xl p-4 text-center shadow-sm border transition-all duration-300 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <div id="txtStatusGeral" class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-400">
+                Iniciando Varredura Ambiental...
+            </div>
         </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
             
-            <main class="lg:col-span-8 space-y-4">
+            <main class="lg:col-span-8 space-y-5">
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[120px]">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
                         <div class="flex justify-between items-start gap-1">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">🌡️ Temperatura</span>
-                            <span class="text-[9px] font-bold text-slate-400 font-mono shrink-0">20~24°C</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🌡️ Temperatura</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">20~24°C</span>
                         </div>
-                        <div class="text-4xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-xl font-light opacity-40">°C</span></div>
-                        <div id="statusTemp" class="text-[10px] font-black uppercase py-0.5 px-2 rounded bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
+                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-lg font-light opacity-40">°C</span></div>
+                        <div id="statusTemp" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
 
-                    <div id="cardHum" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[120px]">
+                    <div id="cardHum" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
                         <div class="flex justify-between items-start gap-1">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💧 Umidade</span>
-                            <span class="text-[9px] font-bold text-slate-400 font-mono shrink-0">40~65%</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💧 Umidade</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">40~65%</span>
                         </div>
-                        <div class="text-4xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-xl font-light opacity-40">%</span></div>
-                        <div id="statusHum" class="text-[10px] font-black uppercase py-0.5 px-2 rounded bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
+                        <div class="text-3xl sm:text-4xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valHumidity">--.-<span class="text-lg font-light opacity-40">%</span></div>
+                        <div id="statusHum" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
 
-                    <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[120px]">
+                    <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
                         <div class="flex justify-between items-start gap-1">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">🍃 Ar Abafado (CO₂)</span>
-                            <span class="text-[9px] font-bold text-slate-400 font-mono shrink-0">1000 PPM</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🍃 Ar Abafado</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">1000 PPM</span>
                         </div>
-                        <div class="text-3xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-lg font-light opacity-40">PPM</span></div>
-                        <div id="statusCO2" class="text-[10px] font-black uppercase py-0.5 px-2 rounded bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
+                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-sm font-light opacity-40">PPM</span></div>
+                        <div id="statusCO2" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
 
-                    <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[120px]">
+                    <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[130px]">
                         <div class="flex justify-between items-start gap-1">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">💦 Pt. Orvalho</span>
-                            <span class="text-[9px] font-bold text-slate-400 font-mono shrink-0">Dinâmico</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💦 Pt. Orvalho</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">Dinâmico</span>
                         </div>
-                        <div class="text-3xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-lg font-light opacity-40">°C</span></div>
-                        <div id="statusOrvalho" class="text-[10px] font-black uppercase py-0.5 px-2 rounded bg-slate-50 dark:bg-slate-800 w-fit">Analisando...</div>
+                        <div class="text-2xl sm:text-3xl font-black tracking-tighter my-2 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-sm font-light opacity-40">°C</span></div>
+                        <div id="statusOrvalho" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
                     </div>
                 </div>
 
@@ -84,10 +104,10 @@
                     
                     <div id="panelTriagemMassaQuantidade"></div>
 
-                    <div id="alertaInfoCritico" class="hidden p-3 bg-rose-600/10 border border-rose-500/30 rounded-xl text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-start gap-2 animate-pulse">
-                        <span>⚠️</span>
-                        <div>
-                            <strong>ALERTA DE DESCOMPENSAÇÃO FÍSICA:</strong> Níveis críticos detectados. Partículas ultrafinas leves (como vírus) podem estar saturando o ambiente sem alterar expressivamente o peso total medido, ou uma única partícula maior (como pólen) gerou instabilidade volumétrica local. Verifique a triagem técnica imediatamente.
+                    <div id="alertaInfoCritico" class="hidden p-3.5 bg-rose-500/10 dark:bg-rose-500/[0.03] border border-rose-500/20 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 flex items-start gap-3">
+                        <span class="text-base shrink-0 mt-0.5">⚠️</span>
+                        <div class="leading-relaxed">
+                            <strong class="font-bold">ALERTA DE DESCOMPENSAÇÃO FÍSICA:</strong> Níveis críticos detectados. Partículas ultrafinas leves (como vírus) podem estar saturando o ambiente sem alterar expressivamente o peso total medido, ou uma única partícula maior (como pólen) gerou instabilidade volumétrica local. Verifique a triagem técnica imediatamente.
                         </div>
                     </div>
                 </section>
@@ -95,7 +115,9 @@
             </main>
 
             <div class="lg:col-span-4 space-y-3">
-                <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Triagem e Resposta Rápida OMS</h2>
+                <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">
+                    Triagem e Resposta Rápida OMS
+                </h2>
                 <div id="panelTriagem" class="space-y-3"></div>
             </div>
 
