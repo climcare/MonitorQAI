@@ -204,7 +204,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
             txtStatusGeral.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
             
             // Texto limpo sem emojis repetidos (o HTML ou CSS já cuida do ícone do container se houver)
-            txtStatusGeral.innerText = critico ? "DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
+            txtStatusGeral.innerText = critico ? "DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "AVISO: PARÂMETROS EM ATENÇÃO PREVENTIVA";
 
             let htmlAlertas = `
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl space-y-3 shadow-sm">
