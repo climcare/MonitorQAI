@@ -38,45 +38,88 @@ function calcularPontoOrvalho(t, rh) {
 }
 
 // ====================================================================
-// NOVO ALGORITMO PONDERADO DO SCORE DE QUALIDADE (IAQ SCORE 0-100)
+// NOVO MOTOR DE CÁLCULO CONTÍNUO + INJEÇÃO DE SINTOMAS CLÍNICOS
 // ====================================================================
 function calcularScoreQAI(leitura, analiseIndividual) {
-    let scoreGases = 25;
-    let scoreMassa = 25;
-    let scoreContagem = 25;
-    let scoreConforto = 25;
+    const temp = Number(leitura.temperature || 0);
+    const hum = Number(leitura.humidity || 0);
+    const co2 = Number(leitura.co2 || 0);
+    const co = Number(leitura.co || 0);
+    const voc = Number(leitura.vocIndex || 0);
+    const pm25 = Number(leitura.pm25 || 0);
+    const pm10 = Number(leitura.pm10 || 0);
+    const nc05 = Number(leitura.nc0_5 || 0);
+    const nc10 = Number(leitura.nc1_0 || 0);
+    const nc100 = Number(leitura.nc10_0 || 0);
 
-    // 1. Penalidade de Gases (CO2, CO, VOC)
-    if (analiseIndividual.co2 === "CRÍTICO" || leitura.co > NORMAS_QAI.gases.co.max) {
-        scoreGases = 5;
-    } else if (analiseIndividual.co2 === "ALERTA" || leitura.vocIndex > NORMAS_QAI.gases.vocIndex.max) {
-        scoreGases = 15;
-    }
+    // ----------------------------------------------------------------
+    // PILAR 1: Renovação do Ar e Gases (Fadiga) - Peso 35%
+    // ----------------------------------------------------------------
+    let notaGases = 100;
+    if (co2 > 700) notaGases -= (co2 - 700) * 0.12; 
+    if (co > 0) notaGases -= (co / NORMAS_QAI.gases.co.max) * 50; 
+    if (voc > NORMAS_QAI.gases.vocIndex.max) notaGases -= (voc - NORMAS_QAI.gases.vocIndex.max) * 0.2;
+    notaGases = Math.max(0, Math.min(100, notaGases));
 
-    // 2. Penalidade de Massa de Particulados (PM2.5 e PM10)
-    if (leitura.pm25 > NORMAS_QAI.particulados.pm25.max || leitura.pm10 > NORMAS_QAI.particulados.pm10.max) {
-        scoreMassa = 5;
-    } else if (leitura.pm25 > (NORMAS_QAI.particulados.pm25.max / 2) || leitura.pm10 > (NORMAS_QAI.particulados.pm10.max / 2)) {
-        scoreMassa = 15;
-    }
+    // ----------------------------------------------------------------
+    // PILAR 2: Pureza Total e Patógenos (Alergias/Asma) - Peso 40%
+    // ----------------------------------------------------------------
+    let notaPoluentes = 100;
+    if (pm25 > 0) notaPoluentes -= (pm25 / NORMAS_QAI.particulados.pm25.max) * 30;
+    if (pm10 > 0) notaPoluentes -= (pm10 / NORMAS_QAI.particulados.pm10.max) * 15;
+    if (nc05 > NORMAS_QAI.contagem.nc0_5.max) notaPoluentes -= 25; 
+    if (nc10 > NORMAS_QAI.contagem.nc1_0.max) notaPoluentes -= 15;
+    if (nc100 > NORMAS_QAI.contagem.nc10_0.max) notaPoluentes -= 15;
+    if (hum > 65) notaPoluentes -= (hum - 65) * 1.5; // Umidade excessiva gera ácaro/mofo
+    notaPoluentes = Math.max(0, Math.min(100, notaPoluentes));
 
-    // 3. Penalidade de Contagem Clínica (NC0.5, NC1.0, NC10.0)
-    if (analiseIndividual.nc05 === "CRÍTICO") {
-        scoreContagem = 5;
-    } else if (analiseIndividual.nc10 === "ALERTA" || analiseIndividual.nc100 === "ALERTA") {
-        scoreContagem = 15;
-    }
+    // ----------------------------------------------------------------
+    // PILAR 3: Conforto Térmico (Desconforto) - Peso 25%
+    // ----------------------------------------------------------------
+    let notaConforto = 100;
+    if (temp < 20 || temp > 24) notaConforto -= Math.abs(temp - 22) * 15;
+    if (hum < 40 || hum > 65) notaConforto -= Math.abs(hum - 52.5) * 1.5;
+    notaConforto = Math.max(0, Math.min(100, notaConforto));
 
-    // 4. Penalidade de Conforto Térmico (Temperatura e Umidade)
-    let desviosConforto = 0;
-    if (analiseIndividual.temperatura !== "BOM") desviosConforto++;
-    if (analiseIndividual.umidade !== "BOM") desviosConforto++;
+    // ----------------------------------------------------------------
+    // MÉDIA PONDERADA MATEMÁTICA
+    // ----------------------------------------------------------------
+    let scoreCalculado = (notaConforto * 0.25) + (notaGases * 0.35) + (notaPoluentes * 0.40);
+
+    // ----------------------------------------------------------------
+    // TRAVAS DE SEGURANÇA CRÍTICAS (Garante consistência visual)
+    // ----------------------------------------------------------------
+    const piorCenarioMapeado = Math.min(notaConforto, notaGases, notaPoluentes);
     
-    if (desviosConforto === 2) scoreConforto = 5;
-    else if (desviosConforto === 1) scoreConforto = 15;
+    const possuiCritico = analiseIndividual.co2 === "CRÍTICO" || 
+                           analiseIndividual.temperatura === "CRÍTICO" || 
+                           analiseIndividual.nc05 === "CRÍTICO" ||
+                           co > NORMAS_QAI.gases.co.max || 
+                           pm25 > NORMAS_QAI.particulados.pm25.max;
 
-    // Retorna a soma matemática limitada entre 0 e 100
-    return Math.max(0, Math.min(100, scoreGases + scoreMassa + scoreContagem + scoreConforto));
+    const possuiAlerta = analiseIndividual.co2 === "ALERTA" || 
+                          analiseIndividual.temperatura === "ALERTA" || 
+                          analiseIndividual.umidade === "ALERTA" ||
+                          analiseIndividual.nc10 === "ALERTA" ||
+                          analiseIndividual.nc100 === "ALERTA" ||
+                          voc > NORMAS_QAI.gases.vocIndex.max ||
+                          pm10 > NORMAS_QAI.particulados.pm10.max;
+
+    if (possuiCritico || piorCenarioMapeado <= 45) {
+        scoreCalculado = Math.min(scoreCalculado, 49); // Limita teto ao modo Crítico
+    } else if (possuiAlerta || piorCenarioMapeado <= 72) {
+        scoreCalculado = Math.min(scoreCalculado, 75); // Limita teto ao modo Atenção
+    }
+
+    // Retorna o cálculo final do score e os índices de sintomas (inversão da nota)
+    return {
+        scoreGeral: Math.max(0, Math.min(100, Math.round(scoreCalculado))),
+        sintomas: {
+            fadiga: Math.round(100 - notaGases),
+            alergia: Math.round(100 - notaPoluentes),
+            desconforto: Math.round(100 - notaConforto)
+        }
+    };
 }
 
 // ====================================================================
@@ -93,6 +136,7 @@ function analisarLeituraQAI(leitura) {
         telemetriaAvancada: {},
         analiseIndividual: {},
         scoreGeral: 100,
+        sintomas: { fadiga: 0, alergia: 0, desconforto: 0 }, // Novo nó reativo
         corStatus: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
         mensagemTexto: "Ambiente Conforme. Todos os parâmetros operam dentro dos limites sanitários ideais."
     };
@@ -221,7 +265,7 @@ function analisarLeituraQAI(leitura) {
             nc10_0: leitura.nc10_0
         },
         tamanhoTipico: leitura.typicalSize || leitura.typical_size || leitura.tps || leitura.bpt,
-        sinalRede: leitura.signalStrength || leitura.signal,
+        sinalRede: lectura.signalStrength || leitura.signal,
         nox: leitura.noxIndex || leitura.nox_index
     };
 
@@ -234,8 +278,12 @@ function analisarLeituraQAI(leitura) {
         nc100: (leitura.nc10_0 <= NORMAS_QAI.contagem.nc10_0.max) ? "BOM" : "ALERTA"
     };
 
-    // Injeta o cálculo dinâmico do Score Geral baseado nas regras originais
-    diagnostico.scoreGeral = calcularScoreQAI(leitura, diagnostico.analiseIndividual);
+    // Executa o novo algoritmo matemático injetando as duas variáveis calculadas
+    const resultadoCalculo = calcularScoreQAI(leitura, diagnostico.analiseIndividual);
+    
+    // Vincula as saídas ao objeto consolidado de retorno
+    diagnostico.scoreGeral = resultadoCalculo.scoreGeral;
+    diagnostico.sintomas = resultadoCalculo.sintomas;
 
     return diagnostico;
 }
