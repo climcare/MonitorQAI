@@ -18,7 +18,7 @@ const NORMAS_QAI = {
     },
     conforto: {
         temperature: { min: 20.0, max: 24.0 }, // °C - Faixa operacional padrão
-        humidity: { min: 40.0, max: 65.0 }     // % - Controle microbiológico
+        humidity: { min: 40.0, max: 65.0 }      // % - Controle microbiológico
     }
 };
 
@@ -42,7 +42,7 @@ function calcularPontoOrvalho(t, rh) {
 // ====================================================================
 function analisarLeituraQAI(leitura) {
     const diagnostico = {
-        dispositivoId: leitura.deviceId,
+        dispositivoId: leitura.deviceId || leitura.device_id,
         carimbotempo: leitura.created_at || new Date().toISOString(),
         statusGeral: "CONFORME", 
         pontoOrvalho: 0,
@@ -51,15 +51,15 @@ function analisarLeituraQAI(leitura) {
         telemetriaAvancada: {}
     };
 
-    const temp = leitura.temperature;
-    const hum = leitura.humidity;
+    const temp = Number(leitura.temperature);
+    const hum = Number(leitura.humidity);
 
-    if (temp && hum) {
+    if (!isNaN(temp) && !isNaN(hum)) {
         diagnostico.pontoOrvalho = calcularPontoOrvalho(temp, hum);
     }
 
     // ==========================================
-    // 1. VALIDAÇÕES - GASES (PRESURVADO DO SEU ORIGINAL)
+    // 1. VALIDAÇÕES - GASES
     // ==========================================
     if (leitura.co2 > NORMAS_QAI.gases.co2.max) {
         diagnostico.violacoes.push({
@@ -83,7 +83,7 @@ function analisarLeituraQAI(leitura) {
     }
 
     // ==========================================
-    // 2. VALIDAÇÕES - MASSA (PRESERVADO DO SEU ORIGINAL)
+    // 2. VALIDAÇÕES - MASSA
     // ==========================================
     if (leitura.pm25 > NORMAS_QAI.particulados.pm25.max) {
         diagnostico.violacoes.push({
@@ -100,31 +100,31 @@ function analisarLeituraQAI(leitura) {
     }
 
     // ==========================================
-    // 3. VALIDAÇÕES CLÍNICAS - QUANTIDADE DE MICRO-PARTÍCULAS (NOVO)
+    // 3. VALIDAÇÕES CLÍNICAS - QUANTIDADE DE MICRO-PARTÍCULAS
     // ==========================================
     if (leitura.nc0_5 > NORMAS_QAI.contagem.nc0_5.max) {
         diagnostico.violacoes.push({
-            parametro: "NC0.5", valor: leitura.nc0_5?.toFixed(0), limite: NORMAS_QAI.contagem.nc0_5.max, unidade: " pt/cm³", gravidade: "CRÍTICO",
+            parametro: "NC0.5", valor: Number(leitura.nc0_5).toFixed(0), limite: NORMAS_QAI.contagem.nc0_5.max, unidade: " pt/cm³", gravidade: "CRÍTICO",
             mensagem: "Altíssima quantidade de micropartículas compatíveis com tamanho de vírus e bactérias em suspensão aeroespacial."
         });
     }
 
     if (leitura.nc1_0 > NORMAS_QAI.contagem.nc1_0.max) {
         diagnostico.violacoes.push({
-            parametro: "NC1.0", valor: leitura.nc1_0?.toFixed(0), limite: NORMAS_QAI.contagem.nc1_0.max, unidade: " pt/cm³", gravidade: "ATENÇÃO",
+            parametro: "NC1.0", valor: Number(leitura.nc1_0).toFixed(0), limite: NORMAS_QAI.contagem.nc1_0.max, unidade: " pt/cm³", gravidade: "ATENÇÃO",
             mensagem: "Densidade excessiva de partículas com o perfil molecular de fumaça, fuligem industrial ou aerosóis secos."
         });
     }
 
     if (leitura.nc10_0 > NORMAS_QAI.contagem.nc10_0.max) {
         diagnostico.violacoes.push({
-            parametro: "NC10.0", valor: leitura.nc10_0?.toFixed(0), limite: NORMAS_QAI.contagem.nc10_0.max, unidade: " pt/cm³", gravidade: "ATENÇÃO",
+            parametro: "NC10.0", valor: Number(leitura.nc10_0).toFixed(0), limite: NORMAS_QAI.contagem.nc10_0.max, unidade: " pt/cm³", gravidade: "ATENÇÃO",
             mensagem: "Presença física massiva de alérgenos pesados como fezes de ácaros domésticos, esporos de mofo ou grãos de pólen."
         });
     }
 
     // ==========================================
-    // 4. VALIDAÇÕES - CONFORTO (PRESERVADO DO SEU ORIGINAL)
+    // 4. VALIDAÇÕES - CONFORTO
     // ==========================================
     if (temp < NORMAS_QAI.conforto.temperature.min || temp > NORMAS_QAI.conforto.temperature.max) {
         diagnostico.violacoes.push({
@@ -152,10 +152,9 @@ function analisarLeituraQAI(leitura) {
         diagnostico.statusGeral = "ATENÇÃO";
     }
 
-    // Mapeamento Integral dos Valores Estáveis (Sem perder nenhuma variável)
     diagnostico.valoresAtuais = {
-        temperature: leitura.temperature,
-        humidity: leitura.humidity,
+        temperature: temp,
+        humidity: hum,
         co2: leitura.co2,
         co: leitura.co,
         vocIndex: leitura.vocIndex,
@@ -163,7 +162,6 @@ function analisarLeituraQAI(leitura) {
         pm10: leitura.pm10
     };
 
-    // Estruturação da Telemetria Avançada Completa para Engenharia
     diagnostico.telemetriaAvancada = {
         contagemParticulas: {
             nc0_5: leitura.nc0_5,
@@ -171,14 +169,11 @@ function analisarLeituraQAI(leitura) {
             nc2_5: leitura.nc2_5,
             nc10_0: leitura.nc10_0
         },
-        tamanhoTipico: leitura.typicalSize,
-        sinalRede: leitura.signalStrength,
-        nox: leitura.noxIndex
+        tamanhoTipico: leitura.typicalSize || leitura.typical_size || leitura.tps || leitura.bpt,
+        sinalRede: leitura.signalStrength || leitura.signal,
+        nox: leitura.noxIndex || leitura.nox_index
     };
 
-    // ====================================================================
-    // MÓDULO SEMAFÓRICO: INCLUINDO AS REGRAS BIOLÓGICAS DAS NOVAS FAIXAS
-    // ====================================================================
     diagnostico.analiseIndividual = {
         temperatura: (temp >= NORMAS_QAI.conforto.temperature.min && temp <= NORMAS_QAI.conforto.temperature.max) ? "BOM" : (temp > 26) ? "CRÍTICO" : "ALERTA",
         umidade: (hum >= NORMAS_QAI.conforto.humidity.min && hum <= NORMAS_QAI.conforto.humidity.max) ? "BOM" : "ALERTA",
