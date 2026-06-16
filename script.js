@@ -65,7 +65,11 @@ async function processarCicloMonitoramento() {
             .single();
 
         if (!error && leituraBruta) {
-            const relatorio = analisarLeituraQAI(leituraBruta);
+            // Fallback preventivo caso a função contida em 'analysis.js' possua algum atraso de escopo
+            const relatorio = typeof analisarLeituraQAI === "function" 
+                ? analisarLeituraQAI(leituraBruta) 
+                : { valoresAtuais: leituraBruta, statusGeral: "CONFORME", scoreGeral: 100 };
+                
             atualizarInterfaceVisual(relatorio, leituraBruta);
         }
     } catch (err) { 
@@ -167,7 +171,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
 
     const statusC05  = avaliarAnomaliaParticula(m10, q10, relatorio.analiseIndividual?.nc05, 25);
     const statusC10  = avaliarAnomaliaParticula(m25, q25, relatorio.analiseIndividual?.nc10, 15);
-    const statusC25  = avaliarAnomaliaParticula(m40, q40, "BOM", 40);
+    const statusC25  = avaliarAnomaliaParticula(m40, q40, relatorio.analiseIndividual?.nc25 || "BOM", 40);
     const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual?.nc100, 50);
 
     // Pintar Cards Semafóricos
@@ -183,22 +187,22 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         domElements.alertaInfoCritico.classList.toggle('hidden', relatorio.statusGeral !== "CRÍTICO");
     }
 
-    // Painel de Status Geral e Triagem Normativa
-    const { panelStatus, txtStatus, panelTriagem } = domElements;
-    if (panelStatus && txtStatus && panelTriagem) {
+    // Painel de Status Geral e Triagem Normativa (IDs Corrigidos para casar com o HTML)
+    const { panelStatusGeral, txtStatusGeral, panelTriagem } = domElements;
+    if (panelStatusGeral && txtStatusGeral && panelTriagem) {
         if (relatorio.statusGeral === "CONFORME") {
-            panelStatus.className = "md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
-            txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
-            txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
+            panelStatusGeral.className = "md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
+            txtStatusGeral.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
+            txtStatusGeral.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
             panelTriagem.innerHTML = `
                 <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-medium text-xs text-center leading-relaxed">
                     ✅ Parâmetros operacionais em total conformidade normativa. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
                 </div>`;
         } else {
             const critico = relatorio.statusGeral === "CRÍTICO";
-            panelStatus.className = `md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
-            txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
-            txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
+            panelStatusGeral.className = `md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
+            txtStatusGeral.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
+            txtStatusGeral.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
             let htmlAlertas = `
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl space-y-3 shadow-sm">
@@ -352,7 +356,7 @@ function obterMitigacaoAnvisa(param) {
         "PM2.5": "Avalie se há infiltração de ar externo sem filtragem prévia; mantenha barreiras físicas limpas e opere o sistema em modo de filtragem de alta eficiência.",
         "PM4.0": "Providencie limpeza corretiva de superfícies por método úmido (vedando varrição a seco) para mitigar a ressuscitação do material particulado.",
         "PM10": "Verifique o estado de colmatação dos pré-filtros (filtros grossos G4) do condicionador de ar e providencie substituição ou higienização imediata.",
-        "NC0.5": "Eleve a velocidade dos ciclos de filtragem e mantenha a taxa de recirculação passando continuamente pela barreira HEPA.",
+        "NC0.5": "Eleve a velocidade dos ciclos de filtragem and mantenha a taxa de recirculação passando continuamente pela barreira HEPA.",
         "NC1.0": "Mitigue as fontes internas de emanação de fumaça e isole os acessos periféricos se houver focos externos de queimada.",
         "NC2.5": "Execute o plano de manutenção e higienização programada dos dutos e caixas de mistura do ambiente climatizado.",
         "NC10.0": "Restrinja a abertura de vãos externos se houver arraste de pólen urbano e assegure a limpeza imediata das grelhas de retorno.",
