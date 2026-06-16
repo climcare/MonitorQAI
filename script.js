@@ -69,6 +69,44 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     document.getElementById('txtSignal').innerText = `${t.sinalRede || dadosBanco.signal || '--'} dBm`;
     document.getElementById('txtTimestamp').innerText = `⏱️ ATUALIZADO EM: ${new Date(relatorio.carimbotempo || dadosBanco.created_at).toLocaleTimeString('pt-BR')}`;
 
+    // ====================================================================
+    // 🎛️ NOVO ACIONAMENTO DO SCORE DE QUALIDADE GERAL GAI
+    // ====================================================================
+    const scoreVal = relatorio.scoreGeral !== undefined ? relatorio.scoreGeral : 100;
+    const elScoreNum = document.getElementById('lblScoreNumero');
+    const elScoreStatus = document.getElementById('lblScoreStatus');
+    const elScoreBar = document.getElementById('barScoreProgresso');
+    const elScoreContainer = document.getElementById('scoreContainer');
+
+    if (elScoreNum && elScoreStatus && elScoreBar && elScoreContainer) {
+        elScoreNum.innerText = scoreVal;
+        elScoreBar.style.width = `${scoreVal}%`;
+
+        // Limpa classes semafóricas antigas do Container do Círculo
+        elScoreContainer.classList.remove('border-emerald-500', 'bg-emerald-500/5', 'border-amber-500', 'bg-amber-500/5', 'border-rose-500', 'bg-rose-500/5');
+        elScoreStatus.classList.remove('text-emerald-500', 'text-amber-500', 'text-rose-500');
+        elScoreBar.classList.remove('bg-emerald-500', 'bg-amber-500', 'bg-rose-500');
+
+        // Atualiza a semântica visual baseado nas notas do Score Ponderado
+        if (scoreVal >= 80) {
+            elScoreStatus.innerText = "EXCELENTE";
+            elScoreStatus.classList.add('text-emerald-500');
+            elScoreContainer.classList.add('border-emerald-500', 'bg-emerald-500/5');
+            elScoreBar.classList.add('bg-emerald-500');
+        } else if (scoreVal >= 50) {
+            elScoreStatus.innerText = "ALERTA";
+            elScoreStatus.classList.add('text-amber-500');
+            elScoreContainer.classList.add('border-amber-500', 'bg-amber-500/5');
+            elScoreBar.classList.add('bg-amber-500');
+        } else {
+            elScoreStatus.innerText = "CRÍTICO";
+            elScoreStatus.classList.add('text-rose-500');
+            elScoreContainer.classList.add('border-rose-500', 'bg-rose-500/5');
+            elScoreBar.classList.add('bg-rose-500');
+        }
+    }
+    // ====================================================================
+
     // Valores dos Cards Principais
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">°C</span>`;
     document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">%</span>`;
@@ -126,22 +164,22 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         else bannerInfo.classList.add('hidden');
     }
 
-    // Status Geral Semafórico Superior
+    // Status Geral Semafórico Superior (Lado Direito do Topo Dividido)
     const panelStatus = document.getElementById('panelStatusGeral');
     const txtStatus = document.getElementById('txtStatusGeral');
     
     if (relatorio.statusGeral === "CONFORME") {
-        panelStatus.className = "rounded-2xl p-4 text-center shadow-md border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold";
-        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white";
+        panelStatus.className = "md:col-span-7 rounded-2xl p-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
+        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
         txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
         document.getElementById('panelTriagem').innerHTML = `
             <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-medium text-xs text-center leading-relaxed">
-                ✅ Parâmetros operacionais em total conformidade normativa. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
+                ✅ Parâmetros operacionais em total conformidade normative. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
             </div>`;
     } else {
         const critico = relatorio.statusGeral === "CRÍTICO";
-        panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all text-white font-bold ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
-        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white";
+        panelStatus.className = `md:col-span-7 rounded-2xl p-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
+        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
         txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
         let htmlAlertas = `
@@ -273,7 +311,6 @@ function pintarCard(cardId, statusId, nivel) {
     const status = document.getElementById(statusId);
     if (!card || !status) return;
     
-    // Limpeza segura usando classes explícitas (Evita bugs com o Regex do Tailwind)
     card.classList.remove('border-emerald-500', 'border-amber-500', 'border-rose-600', 'border-transparent');
     status.className = "text-[9px] font-black uppercase py-0.5 px-2 rounded w-fit text-white";
 
