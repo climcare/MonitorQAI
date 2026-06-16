@@ -18,11 +18,16 @@ function inicializarGerenciadorTema() {
     const txt = document.getElementById('txtTema');
     const htmlElement = document.documentElement;
 
-    const temaSalvo = localStorage.getItem('qai-tema') || 'light';
+    const temaSalvo = localStorage.getItem('qai-tema') || 'dark';
+    
     if (temaSalvo === 'dark') {
         htmlElement.classList.add('dark');
         ico.innerText = '☀️';
         txt.innerText = 'MODO DIURNO';
+    } else {
+        htmlElement.classList.remove('dark');
+        ico.innerText = '🌙';
+        txt.innerText = 'MODO NOTURNO';
     }
 
     btn.addEventListener('click', () => {
@@ -68,11 +73,11 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">°C</span>`;
     document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">%</span>`;
     
-    // CO2 mantendo estritamente a cor padrão do tema (Preto/Branco conforme ambiente)
+    // CO2 mantendo estritamente a cor padrão do tema
     const valorCO2fleshy = v.co2 || dadosBanco.co2 || '----';
     document.getElementById('valCO2').innerHTML = `<span class="text-slate-900 dark:text-white font-black text-3xl sm:text-4xl">${valorCO2fleshy}</span> <span class="text-base font-light opacity-40">PPM</span>`;
     
-    // Ponto de Orvalho limpo e sem elementos/avisos extras dentro do card
+    // Ponto de Orvalho
     const elOrvalho = document.getElementById('valPontoOrvalho');
     if (elOrvalho) {
         const valorOrvalho = relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-';
@@ -126,27 +131,25 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const txtStatus = document.getElementById('txtStatusGeral');
     
     if (relatorio.statusGeral === "CONFORME") {
-        panelStatus.className = "rounded-2xl p-4 text-center shadow-md border-2 transition-all bg-emerald-500 text-white border-emerald-400";
-        txtStatus.className = "text-base font-black uppercase tracking-wider text-white";
+        panelStatus.className = "rounded-2xl p-4 text-center shadow-md border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold";
+        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white";
         txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
         document.getElementById('panelTriagem').innerHTML = `
-            <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs text-center">
-                ✅ Parâmetros em conformidade normativa. Nenhuma ação corretiva é necessária para este ambiente climatizado.
+            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-medium text-xs text-center leading-relaxed">
+                ✅ Parâmetros operacionais em total conformidade normativa. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
             </div>`;
     } else {
         const critico = relatorio.statusGeral === "CRÍTICO";
-        panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all text-white ${critico ? 'bg-rose-600 border-rose-400 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
-        txtStatus.className = "text-base font-black uppercase tracking-wider text-white";
+        panelStatus.className = `rounded-2xl p-4 text-center shadow-md border-2 transition-all text-white font-bold ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
+        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white";
         txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
-        // Geração da Triagem Lateral Direita
         let htmlAlertas = `
-            <div class="bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-300/10 rounded-2xl p-3 space-y-2.5">
-                <h3 class="text-[11px] font-black uppercase text-slate-500 dark:text-slate-500 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl space-y-3 shadow-sm">
+                <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
         `;
 
         if (relatorio.violacoes && relatorio.violacoes.length > 0) {
-            // Se houver desvio de umidade, injetamos dinamicamente o risco de condensação do Ponto de Orvalho na Triagem
             const possuiDesvioUmidade = relatorio.violacoes.some(e => e.parametro === "Umidade");
             const jaPossuiOrvalho = relatorio.violacoes.some(e => e.parametro === "PontoOrvalho");
             
@@ -160,25 +163,25 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
             }
 
             relatorio.violacoes.forEach(erro => {
-                const corBorda = erro.gravidade === 'CRÍTICO' ? 'border-rose-600' : 'border-amber-500';
-                const corTexto = erro.gravidade === 'CRÍTICO' ? 'text-rose-600' : 'text-amber-500';
+                const corBorda = erro.gravidade === 'CRÍTICO' ? 'border-rose-500' : 'border-amber-500';
+                const corTexto = erro.gravidade === 'CRÍTICO' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400';
 
                 htmlAlertas += `
-                    <div class="bg-white dark:bg-slate-900 border-l-4 ${corBorda} rounded-xl p-3 shadow-sm">
+                    <div class="bg-slate-50 dark:bg-slate-950/40 border-l-4 ${corBorda} rounded-xl p-3 shadow-sm transition-all">
                         <details class="group">
-                            <summary class="flex justify-between items-center cursor-pointer list-none focus:outline-none">
+                            <summary class="flex justify-between items-center cursor-pointer list-none focus:outline-none select-none">
                                 <div class="space-y-0.5">
-                                    <p class="text-[11px] font-black ${corTexto} uppercase tracking-tight">⚠️ ${obterNomeTraduzido(erro.parametro)}</p>
+                                    <p class="text-xs font-bold ${corTexto} uppercase tracking-tight">⚠️ ${obterNomeTraduzido(erro.parametro)}</p>
                                     <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Atual: ${erro.valor}${erro.unidade}</p>
                                 </div>
-                                <span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded font-bold text-slate-500 dark:text-slate-400 group-open:hidden">👉 Solução</span>
-                                <span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded font-bold text-slate-600 dark:text-slate-300 hidden group-open:inline">▲ Ocultar</span>
+                                <span class="text-[10px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded font-bold text-slate-500 dark:text-slate-400 group-open:hidden transition-all shadow-sm">👉 Solução</span>
+                                <span class="text-[10px] bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded font-bold text-slate-600 dark:text-slate-300 hidden group-open:inline transition-all">▲ Ocultar</span>
                             </summary>
-                            <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">${obterMensagemAnvisa(erro.parametro, erro.valor)}</p>
-                                <div class="bg-sky-50 dark:bg-sky-950/30 rounded-lg p-2.5 border border-sky-100 dark:border-sky-900/40">
-                                    <p class="text-[10px] font-mono font-bold text-sky-700 dark:text-sky-400 uppercase">🛠️ PROTOCOLO DE MITIGAÇÃO HIGIÊNICA:</p>
-                                    <p class="text-xs text-slate-700 dark:text-slate-200 font-medium mt-0.5">${obterMitigacaoAnvisa(erro.parametro)}</p>
+                            <div class="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-800/80 space-y-2">
+                                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">${obterMensagemAnvisa(erro.parametro, erro.valor)}</p>
+                                <div class="bg-sky-500/[0.06] rounded-xl p-3 border border-sky-500/10">
+                                    <p class="text-[9px] font-mono font-black text-sky-600 dark:text-sky-400 uppercase tracking-wider">🛠️ PROTOCOLO DE MITIGAÇÃO HIGIÊNICA:</p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1 leading-relaxed">${obterMitigacaoAnvisa(erro.parametro)}</p>
                                 </div>
                             </div>
                         </details>
@@ -193,73 +196,73 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     // Seção de Partículas (Peso vs Quantidade Real)
     const quadroCorrelacao = document.getElementById('panelTriagemMassaQuantidade');
     if (quadroCorrelacao) {
-        const tpsRaw = dadosBanco.tps || dadosBanco.bpt || t.tamanhoTipico || 0.45;
+        const tpsRaw = dadosBanco.typical_size || dadosBanco.typicalSize || dadosBanco.tps || dadosBanco.bpt || t.tamanhoTipico || 0.45;
         const tamanhoTipicoFormatado = `${Number(tpsRaw).toFixed(2)} µm`;
 
         const obtenerClasseCor = (status) => {
-            if (status === "ALERTA") return "text-amber-500 dark:text-amber-400";
-            if (status === "CRITICO") return "text-rose-500 dark:text-rose-400";
-            return "text-emerald-500 dark:text-emerald-400";
+            if (status === "ALERTA") return "text-amber-500 font-black";
+            if (status === "CRITICO") return "text-rose-500 font-black";
+            return "text-emerald-500 font-black";
         };
 
         const obtenerClasseBorda = (status) => {
-            if (status === "ALERTA") return "border-amber-500/70 bg-amber-500/5 dark:bg-amber-500/[0.02]";
-            if (status === "CRITICO") return "border-rose-500 bg-rose-500/5 dark:bg-rose-500/[0.02] animate-pulse";
-            return "border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/50";
+            if (status === "ALERTA") return "border-amber-500/40 bg-amber-500/[0.02]";
+            if (status === "CRITICO") return "border-rose-500/50 bg-rose-500/[0.02]";
+            return "border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20";
         };
 
         quadroCorrelacao.innerHTML = `
             <div class="space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-1">
-                    <h2 class="text-sm sm:text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                    <h2 class="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                         🔬 Análise Física de Partículas (Peso vs. Quantidade Real - NBR 17037)
                     </h2>
-                    <span class="bg-sky-100 text-sky-900 dark:bg-sky-950/50 dark:text-sky-400 text-xs sm:text-[10px] font-mono px-2.5 py-1 rounded-md font-bold border border-sky-200/50 dark:border-sky-900/30 text-center">
+                    <span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-mono px-2.5 py-1 rounded-md font-bold border border-slate-200 dark:border-slate-700 text-center tracking-tight">
                         📐 TAMANHO MÉDIO RELEVANTE: ${tamanhoTipicoFormatado}
                     </span>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC05)}">
-                        <div><p class="text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">Bioaerossóis flutuantes</p></div>
-                        <div class="my-2 py-2 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-1">
-                            <p class="text-xs font-mono font-bold">Massa: <span class="${obtenerClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold">Contagem: <span class="text-sky-600">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC05)}">
+                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Bioaerossóis flutuantes</p></div>
+                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
+                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
-                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC10)}">
-                        <div><p class="text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">Aerossóis e Fumaças</p></div>
-                        <div class="my-2 py-2 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-1">
-                            <p class="text-xs font-mono font-bold">Massa: <span class="${obtenerClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold">Contagem: <span class="text-sky-600">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC10)}">
+                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Aerossóis e Fumaças</p></div>
+                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
+                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
-                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC25)}">
-                        <div><p class="text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">Poeira Inalável Fina</p></div>
-                        <div class="my-2 py-2 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-1">
-                            <p class="text-xs font-mono font-bold">Massa: <span class="${obtenerClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold">Contagem: <span class="text-sky-600">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC25)}">
+                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Poeira Inalável Fina</p></div>
+                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
+                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
-                    <div class="p-4 border rounded-2xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC100)}">
-                        <div><p class="text-xs text-slate-900 dark:text-white font-black uppercase tracking-tight">Particulado Macroscópico</p></div>
-                        <div class="my-2 py-2 bg-slate-50 dark:bg-slate-900/80 rounded-xl space-y-1">
-                            <p class="text-xs font-mono font-bold">Massa: <span class="${obtenerClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-xs font-mono font-bold">Contagem: <span class="text-sky-600">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
+                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC100)}">
+                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Particulado Macroscópico</p></div>
+                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
+                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
+                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 p-3 rounded-xl space-y-2.5">
-    <p class="text-xs sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-        <span class="font-bold text-slate-900 dark:text-white">💡 Entendimento Prático (Partículas):</span> 
-        A <span class="underline decoration-emerald-500 decoration-2">Massa</span> indica a concentração acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
-    </p>
-    <p class="text-xs sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed border-t border-slate-200 dark:border-slate-800/60 pt-2">
-        <span class="font-bold text-slate-900 dark:text-white">🌡️ O que é e como ocorre o Ponto de Orvalho?</span> 
-        É a temperatura exata na qual o ar atinge a sua saturação máxima de umidade (100% de Umidade Relativa). Fisicamente, ocorre quando o ar quente do ambiente—que carrega vapor de água invisível—entra em contato com qualquer superfície ou massa de ar que esteja igual ou abaixo dessa temperatura limite. Ao esfriar repentinamente, o ar perde a capacidade de reter a água em estado gasoso, forçando o vapor a se condensar e se transformar em água líquida (orvalho).
-    </p>
-</div>
+                <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-850 p-3.5 rounded-xl space-y-2 leading-relaxed">
+                    <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+                        <span class="font-bold text-slate-800 dark:text-slate-200">💡 Entendimento Prático (Partículas):</span> 
+                        A <span class="underline decoration-emerald-500 decoration-2 font-semibold">Massa</span> indica a concentração acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2 font-semibold">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
+                    </p>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium border-t border-slate-200 dark:border-slate-800/80 pt-2">
+                        <span class="font-bold text-slate-800 dark:text-slate-200">🌡️ O que é e como ocorre o Ponto de Orvalho?</span> 
+                        É a temperatura exata na qual o ar atinge a sua saturação máxima de umidade (100% de Umidade Relativa). Fisicamente, ocorre quando o ar quente do ambiente—que carrega vapor de água invisível—entra em contato com qualquer superfície ou massa de ar que esteja igual ou abaixo dessa temperatura limite. Ao esfriar repentinamente, o ar perde a capacidade de reter a água em estado gasoso, forçando o vapor a se condensar e se transformar em água líquida (orvalho).
+                    </p>
+                </div>
             </div>
         `;
     }
@@ -269,21 +272,23 @@ function pintarCard(cardId, statusId, nivel) {
     const card = document.getElementById(cardId);
     const status = document.getElementById(statusId);
     if (!card || !status) return;
-    card.className = card.className.replace(/(border-\S+)/g, '');
-    status.className = status.className.replace(/(bg-\S+|text-\S+)/g, '');
+    
+    // Limpeza segura usando classes explícitas (Evita bugs com o Regex do Tailwind)
+    card.classList.remove('border-emerald-500', 'border-amber-500', 'border-rose-600', 'border-transparent');
+    status.className = "text-[9px] font-black uppercase py-0.5 px-2 rounded w-fit text-white";
 
     if (nivel === "BOM") {
         card.classList.add('border-emerald-500');
         status.innerText = "🟢 EXCELENTE";
-        status.classList.add('bg-emerald-500', 'text-white');
+        status.classList.add('bg-emerald-500');
     } else if (nivel === "ALERTA") {
         card.classList.add('border-amber-500');
         status.innerText = "⚠️ ATENÇÃO";
-        status.classList.add('bg-amber-500', 'text-white');
+        status.classList.add('bg-amber-500');
     } else {
         card.classList.add('border-rose-600');
         status.innerText = "🚨 CRÍTICO";
-        status.classList.add('bg-rose-600', 'text-white');
+        status.classList.add('bg-rose-600');
     }
 }
 
