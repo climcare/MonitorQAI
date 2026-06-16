@@ -139,11 +139,54 @@
 
             </main>
 
-            <div class="lg:col-span-4 space-y-3">
-                <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">
-                    Triagem e Resposta Rápida OMS
-                </h2>
-                <div id="panelTriagem" class="space-y-3"></div>
+            <div class="lg:col-span-4 space-y-4">
+                
+                <div class="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-3.5">
+                    <div>
+                        <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-wider">🫁 Impacto Clínico Projetado (Ocupantes)</h3>
+                        <p class="text-[11px] text-slate-500 font-medium mt-0.5 leading-tight">Probabilidade de reações sintomáticas imediatas baseadas nos dados ambientais.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
+                                <span class="flex items-center gap-1.5"><span id="icoSintomaFadiga" class="text-sm">💤</span> Fadiga & Sonolência</span>
+                                <span id="txtPctFadiga" class="font-mono text-[11px] text-slate-400">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200/20">
+                                <div id="barSintomaFadiga" class="bg-gradient-to-r from-amber-400 to-rose-500 h-full transition-all duration-500" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
+                                <span class="flex items-center gap-1.5"><span id="icoSintomaAlergia" class="text-sm">🤧</span> Rinite & Estresse Alérgico</span>
+                                <span id="txtPctAlergia" class="font-mono text-[11px] text-slate-400">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200/20">
+                                <div id="barSintomaAlergia" class="bg-gradient-to-r from-amber-400 to-rose-500 h-full transition-all duration-500" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
+                                <span class="flex items-center gap-1.5"><span id="icoSintomaDesconforto" class="text-sm">🌡️</span> Desconforto Respiratório</span>
+                                <span id="txtPctDesconforto" class="font-mono text-[11px] text-slate-400">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200/20">
+                                <div id="barSintomaDesconforto" class="bg-gradient-to-r from-amber-400 to-rose-500 h-full transition-all duration-500" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">
+                        Triagem e Resposta Rápida OMS
+                    </h2>
+                    <div id="panelTriagem" class="space-y-3"></div>
+                </div>
+
             </div>
 
         </div>
