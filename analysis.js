@@ -265,7 +265,7 @@ function analisarLeituraQAI(leitura) {
             nc10_0: leitura.nc10_0
         },
         tamanhoTipico: leitura.typicalSize || leitura.typical_size || leitura.tps || leitura.bpt,
-        sinalRede: lectura.signalStrength || leitura.signal,
+        sinalRede: leitura.signalStrength || leitura.signal,
         nox: leitura.noxIndex || leitura.nox_index
     };
 
