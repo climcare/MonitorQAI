@@ -107,6 +107,29 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     }
     // ====================================================================
 
+    // ====================================================================
+    // 🧠 INJEÇÃO REATIVA DOS ÍCONES E BARRAS DE SINTOMAS CLÍNICOS
+    // ====================================================================
+    if (relatorio.sintomas) {
+        const s = relatorio.sintomas;
+
+        // Atualiza elementos de texto (porcentagem de impacto de 0% a 100%)
+        if (document.getElementById('txtPctFadiga')) document.getElementById('txtPctFadiga').innerText = `${s.fadiga}%`;
+        if (document.getElementById('txtPctAlergia')) document.getElementById('txtPctAlergia').innerText = `${s.alergia}%`;
+        if (document.getElementById('txtPctDesconforto')) document.getElementById('txtPctDesconforto').innerText = `${s.desconforto}%`;
+
+        // Atualiza a largura das barras de progresso físicas
+        if (document.getElementById('barSintomaFadiga')) document.getElementById('barSintomaFadiga').style.width = `${s.fadiga}%`;
+        if (document.getElementById('barSintomaAlergia')) document.getElementById('barSintomaAlergia').style.width = `${s.alergia}%`;
+        if (document.getElementById('barSintomaDesconforto')) document.getElementById('barSintomaDesconforto').style.width = `${s.desconforto}%`;
+
+        // Atualização dinâmica dos emojis baseado no nível do sintoma acumulado
+        if (document.getElementById('icoSintomaFadiga')) document.getElementById('icoSintomaFadiga').innerText = s.fadiga > 40 ? "🥱" : "💤";
+        if (document.getElementById('icoSintomaAlergia')) document.getElementById('icoSintomaAlergia').innerText = s.alergia > 40 ? "🚨" : "🤧";
+        if (document.getElementById('icoSintomaDesconforto')) document.getElementById('icoSintomaDesconforto').innerText = s.desconforto > 40 ? "🥵" : "🌡️";
+    }
+    // ====================================================================
+
     // Valores dos Cards Principais
     document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">°C</span>`;
     document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">%</span>`;
@@ -164,21 +187,22 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
         else bannerInfo.classList.add('hidden');
     }
 
-    // Status Geral Semafórico Superior (Lado Direito do Topo Dividido)
+    // Status Geral Semafórico Superior (Lado Direito do Topo Ajustado Verticalmente)
     const panelStatus = document.getElementById('panelStatusGeral');
     const txtStatus = document.getElementById('txtStatusGeral');
     
     if (relatorio.statusGeral === "CONFORME") {
-        panelStatus.className = "md:col-span-7 rounded-2xl p-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
+        panelStatus.className = "md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
         txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
         txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
         document.getElementById('panelTriagem').innerHTML = `
             <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-medium text-xs text-center leading-relaxed">
-                ✅ Parâmetros operacionais em total conformidade normative. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
+                ✅ Parâmetros operacionais em total conformidade normativa. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
             </div>`;
     } else {
         const critico = relatorio.statusGeral === "CRÍTICO";
-        panelStatus.className = `md:col-span-7 rounded-2xl p-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
+        // Aplicação do py-2 px-4 e items-center para harmonização imediata de proporção com o Score ao lado
+        panelStatus.className = `md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
         txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
         txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
@@ -294,7 +318,7 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
                 <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-850 p-3.5 rounded-xl space-y-2 leading-relaxed">
                     <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                         <span class="font-bold text-slate-800 dark:text-slate-200">💡 Entendimento Prático (Partículas):</span> 
-                        A <span class="underline decoration-emerald-500 decoration-2 font-semibold">Massa</span> indica a concentração acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2 font-semibold">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
+                        A <span class="underline decoration-emerald-500 decoration-2 font-semibold">Massa</span> indica a concentration acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2 font-semibold">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
                     </p>
                     <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium border-t border-slate-200 dark:border-slate-800/80 pt-2">
                         <span class="font-bold text-slate-800 dark:text-slate-200">🌡️ O que é e como ocorre o Ponto de Orvalho?</span> 
@@ -358,7 +382,7 @@ function obterMensagemAnvisa(param, valor) {
         "PM2.5": `🚨 Material particulado fino inalável acima dos limites higiênicos ideais de pureza e filtragem ambiental.`,
         "PM4.0": `🌬️ Concentração de poeira e aerodispersoides em elevação na zona respiratória dos ocupantes.`,
         "PM10": `🍂 Nível de particulado total em suspensão (PM10) inadequado, favorecendo o transporte de alérgenos e ácaros no recinto.`,
-        "NC0.5": `🚨 Densidade de contagem microscópica elevada, superando a taxa de atenuação passiva do fluxo de ar local.`,
+        "NC0.5": `🚨 Densidade de contagem microscópica elevada, superando a taxa de amostragem passiva do fluxo de ar local.`,
         "NC1.0": `🚨 Contagem de micropartículas na curva de fumaça ou queima acima das taxas aceitáveis de pureza interna.`,
         "NC2.5": `⚠️ Distribuição de micropartículas finas dispersas extrapolando as faixas ideais de controle isocinético.`,
         "NC10.0": `🍂 Quantidade excessiva de macropartículas em suspensão atuando diretamente como agentes de estresse alérgico respiratório.`,
@@ -372,7 +396,7 @@ function obterMensagemAnvisa(param, valor) {
 function obterMitigacaoAnvisa(param) {
     const acoes = {
         "CO2": "Incremente imediatamente o volume de ar externo captado através do sistema mecânico ou realize aberturas localizadas de janelas para forçar a renovação do ar e diluição do CO₂.",
-        "CO": "PROTOCOLO DE EMERGÊNCIA: Evacue a área técnica imediatamente, locate a fonte de combustão ou refluxo e isole as tomadas de ar externas contaminadas.",
+        "CO": "PROTOCOLO DE EMERGÊNCIA: Evacue a área técnica imediatamente, localize a fonte de combustão ou refluxo e isole as tomadas de ar externas contaminadas.",
         "VOC": "Suspenda imediatamente o uso de saneantes químicos, tintas ou sprays, e opere a renovação forçada em vazão máxima para exaustão dos precursores voláteis.",
         "PM1.0": "Ative os purificadores auxiliares e certifique-se da estanqueidade e integridade operacional dos filtros de classe absoluta dispostos no fancoil.",
         "PM2.5": "Avalie se há infiltração de ar externo sem filtragem prévia; mantenha barreiras físicas limpas e opere o sistema em modo de filtragem de alta eficiência.",
