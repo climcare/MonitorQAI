@@ -2,11 +2,13 @@ const SUPABASE_URL = 'https://iaylyacrzurcjwvtecpu.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_pkzx4u5U9Xr407syiBE9yA_G7hUvGaw';
 
 let supabaseClient = null;
+let domElements = {}; // Cache para otimização de performance do DOM
 
 window.onload = async () => {
     inicializarGerenciadorTema();
     if (typeof supabase !== "undefined") {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        inicializarCacheDOM();
         await processarCicloMonitoramento();
         setInterval(processarCicloMonitoramento, 15000); 
     }
@@ -18,30 +20,37 @@ function inicializarGerenciadorTema() {
     const txt = document.getElementById('txtTema');
     const htmlElement = document.documentElement;
 
-    const temaSalvo = localStorage.getItem('qai-tema') || 'dark';
-    
-    if (temaSalvo === 'dark') {
-        htmlElement.classList.add('dark');
-        ico.innerText = '☀️';
-        txt.innerText = 'MODO DIURNO';
-    } else {
-        htmlElement.classList.remove('dark');
-        ico.innerText = '🌙';
-        txt.innerText = 'MODO NOTURNO';
-    }
+    const atualizarTemaUI = (isDark) => {
+        htmlElement.classList.toggle('dark', isDark);
+        if (ico) ico.innerText = isDark ? '☀️' : '🌙';
+        if (txt) txt.innerText = isDark ? 'MODO DIURNO' : 'MODO NOTURNO';
+    };
 
-    btn.addEventListener('click', () => {
-        if (htmlElement.classList.contains('dark')) {
-            htmlElement.classList.remove('dark');
-            ico.innerText = '🌙';
-            txt.innerText = 'MODO NOTURNO';
-            localStorage.setItem('qai-tema', 'light');
-        } else {
-            htmlElement.classList.add('dark');
-            ico.innerText = '☀️';
-            txt.innerText = 'MODO DIURNO';
-            localStorage.setItem('qai-tema', 'dark');
-        }
+    const temaSalvo = localStorage.getItem('qai-tema') || 'dark';
+    atualizarTemaUI(temaSalvo === 'dark');
+
+    if (btn) {
+        btn.addEventListener('click', () => {
+            const ficarEscuro = !htmlElement.classList.contains('dark');
+            atualizarTemaUI(ficarEscuro);
+            localStorage.setItem('qai-tema', ficarEscuro ? 'dark' : 'light');
+        });
+    }
+}
+
+// Mapeia e armazena os elementos uma única vez para evitar buscas repetitivas (Reflow/Repaint)
+function inicializarCacheDOM() {
+    const ids = [
+        'txtDeviceId', 'txtSignal', 'txtTimestamp', 'lblScoreNumero', 'lblScoreStatus', 
+        'barScoreProgresso', 'scoreContainer', 'txtPctFadiga', 'txtPctAlergia', 'txtPctDesconforto',
+        'barSintomaFadiga', 'barSintomaAlergia', 'barSintomaDesconforto', 'icoSintomaFadiga', 
+        'icoSintomaAlergia', 'icoSintomaDesconforto', 'valTemperature', 'valHumidity', 'valCO2', 
+        'valPontoOrvalho', 'cardTemp', 'statusTemp', 'cardHum', 'statusHum', 'cardCO2', 'statusCO2',
+        'cardOrvalho', 'statusOrvalho', 'alertaInfoCritico', 'panelStatusGeral', 'txtStatusGeral', 
+        'panelTriagem', 'panelTriagemMassaQuantidade'
+    ];
+    ids.forEach(id => {
+        domElements[id] = document.getElementById(id);
     });
 }
 
@@ -50,13 +59,18 @@ async function processarCicloMonitoramento() {
     try {
         const { data: leituraBruta, error } = await supabaseClient
             .from('sensor_readings')
-            .select('*').order('created_at', { ascending: false }).limit(1).single();
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
 
         if (!error && leituraBruta) {
             const relatorio = analisarLeituraQAI(leituraBruta);
             atualizarInterfaceVisual(relatorio, leituraBruta);
         }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error("Erro no ciclo de monitoramento:", err); 
+    }
 }
 
 function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
@@ -65,274 +79,210 @@ function atualizarInterfaceVisual(relatorio, leituraBruta = {}) {
     const dadosBanco = leituraBruta || {};
 
     // Telemetria do Topo
-    document.getElementById('txtDeviceId').innerText = relatorio.dispositivoId || dadosBanco.device_id || '--';
-    document.getElementById('txtSignal').innerText = `${t.sinalRede || dadosBanco.signal || '--'} dBm`;
-    document.getElementById('txtTimestamp').innerText = `⏱️ ATUALIZADO EM: ${new Date(relatorio.carimbotempo || dadosBanco.created_at).toLocaleTimeString('pt-BR')}`;
+    if (domElements.txtDeviceId) domElements.txtDeviceId.innerText = relatorio.dispositivoId || dadosBanco.device_id || '--';
+    if (domElements.txtSignal) domElements.txtSignal.innerText = `${t.sinalRede || dadosBanco.signal || '--'} dBm`;
+    if (domElements.txtTimestamp) {
+        const dataFormatada = new Date(relatorio.carimbotempo || dadosBanco.created_at).toLocaleTimeString('pt-BR');
+        domElements.txtTimestamp.innerText = `⏱️ ATUALIZADO EM: ${dataFormatada}`;
+    }
 
-    // ====================================================================
-    // 🎛️ NOVO ACIONAMENTO DO SCORE DE QUALIDADE GERAL GAI
-    // ====================================================================
+    // Score de Qualidade Geral GAI
     const scoreVal = relatorio.scoreGeral !== undefined ? relatorio.scoreGeral : 100;
-    const elScoreNum = document.getElementById('lblScoreNumero');
-    const elScoreStatus = document.getElementById('lblScoreStatus');
-    const elScoreBar = document.getElementById('barScoreProgresso');
-    const elScoreContainer = document.getElementById('scoreContainer');
+    const { lblScoreNumero, lblScoreStatus, barScoreProgresso, scoreContainer } = domElements;
 
-    if (elScoreNum && elScoreStatus && elScoreBar && elScoreContainer) {
-        elScoreNum.innerText = scoreVal;
-        elScoreBar.style.width = `${scoreVal}%`;
+    if (lblScoreNumero && lblScoreStatus && barScoreProgresso && scoreContainer) {
+        lblScoreNumero.innerText = scoreVal;
+        barScoreProgresso.style.width = `${scoreVal}%`;
 
-        // Limpa classes semafóricas antigas do Container do Círculo
-        elScoreContainer.classList.remove('border-emerald-500', 'bg-emerald-500/5', 'border-amber-500', 'bg-amber-500/5', 'border-rose-500', 'bg-rose-500/5');
-        elScoreStatus.classList.remove('text-emerald-500', 'text-amber-500', 'text-rose-500');
-        elScoreBar.classList.remove('bg-emerald-500', 'bg-amber-500', 'bg-rose-500');
+        scoreContainer.classList.remove('border-emerald-500', 'bg-emerald-500/5', 'border-amber-500', 'bg-amber-500/5', 'border-rose-500', 'bg-rose-500/5');
+        lblScoreStatus.classList.remove('text-emerald-500', 'text-amber-500', 'text-rose-500');
+        barScoreProgresso.classList.remove('bg-emerald-500', 'bg-amber-500', 'bg-rose-500');
 
-        // Atualiza a semântica visual baseado nas notas do Score Ponderado
         if (scoreVal >= 80) {
-            elScoreStatus.innerText = "EXCELENTE";
-            elScoreStatus.classList.add('text-emerald-500');
-            elScoreContainer.classList.add('border-emerald-500', 'bg-emerald-500/5');
-            elScoreBar.classList.add('bg-emerald-500');
+            lblScoreStatus.innerText = "EXCELENTE";
+            lblScoreStatus.classList.add('text-emerald-500');
+            scoreContainer.classList.add('border-emerald-500', 'bg-emerald-500/5');
+            barScoreProgresso.classList.add('bg-emerald-500');
         } else if (scoreVal >= 50) {
-            elScoreStatus.innerText = "ALERTA";
-            elScoreStatus.classList.add('text-amber-500');
-            elScoreContainer.classList.add('border-amber-500', 'bg-amber-500/5');
-            elScoreBar.classList.add('bg-amber-500');
+            lblScoreStatus.innerText = "ALERTA";
+            lblScoreStatus.classList.add('text-amber-500');
+            scoreContainer.classList.add('border-amber-500', 'bg-amber-500/5');
+            barScoreProgresso.classList.add('bg-amber-500');
         } else {
-            elScoreStatus.innerText = "CRÍTICO";
-            elScoreStatus.classList.add('text-rose-500');
-            elScoreContainer.classList.add('border-rose-500', 'bg-rose-500/5');
-            elScoreBar.classList.add('bg-rose-500');
+            lblScoreStatus.innerText = "CRÍTICO";
+            lblScoreStatus.classList.add('text-rose-500');
+            scoreContainer.classList.add('border-rose-500', 'bg-rose-500/5');
+            barScoreProgresso.classList.add('bg-rose-500');
         }
     }
-    // ====================================================================
 
-    // ====================================================================
-    // 🧠 INJEÇÃO REATIVA DOS ÍCONES E BARRAS DE SINTOMAS CLÍNICOS
-    // ====================================================================
+    // Sintomas Clínicos
     if (relatorio.sintomas) {
         const s = relatorio.sintomas;
-
-        // Atualiza elementos de texto (porcentagem de impacto de 0% a 100%)
-        if (document.getElementById('txtPctFadiga')) document.getElementById('txtPctFadiga').innerText = `${s.fadiga}%`;
-        if (document.getElementById('txtPctAlergia')) document.getElementById('txtPctAlergia').innerText = `${s.alergia}%`;
-        if (document.getElementById('txtPctDesconforto')) document.getElementById('txtPctDesconforto').innerText = `${s.desconforto}%`;
-
-        // Atualiza a largura das barras de progresso físicas
-        if (document.getElementById('barSintomaFadiga')) document.getElementById('barSintomaFadiga').style.width = `${s.fadiga}%`;
-        if (document.getElementById('barSintomaAlergia')) document.getElementById('barSintomaAlergia').style.width = `${s.alergia}%`;
-        if (document.getElementById('barSintomaDesconforto')) document.getElementById('barSintomaDesconforto').style.width = `${s.desconforto}%`;
-
-        // Atualização dinâmica dos emojis baseado no nível do sintoma acumulado
-        if (document.getElementById('icoSintomaFadiga')) document.getElementById('icoSintomaFadiga').innerText = s.fadiga > 40 ? "🥱" : "💤";
-        if (document.getElementById('icoSintomaAlergia')) document.getElementById('icoSintomaAlergia').innerText = s.alergia > 40 ? "🚨" : "🤧";
-        if (document.getElementById('icoSintomaDesconforto')) document.getElementById('icoSintomaDesconforto').innerText = s.desconforto > 40 ? "🥵" : "🌡️";
+        const atualizarSintoma = (idPct, idBar, idIco, valor, emojiAlto, emojiBaixo) => {
+            if (domElements[idPct]) domElements[idPct].innerText = `${valor}%`;
+            if (domElements[idBar]) domElements[idBar].style.width = `${valor}%`;
+            if (domElements[idIco]) domElements[idIco].innerText = valor > 40 ? emojiAlto : emojiBaixo;
+        };
+        atualizarSintoma('txtPctFadiga', 'barSintomaFadiga', 'icoSintomaFadiga', s.fadiga, "🥱", "💤");
+        atualizarSintoma('txtPctAlergia', 'barSintomaAlergia', 'icoSintomaAlergia', s.alergia, "🚨", "🤧");
+        atualizarSintoma('txtPctDesconforto', 'barSintomaDesconforto', 'icoSintomaDesconforto', s.desconforto, "🥵", "🌡️");
     }
-    // ====================================================================
 
     // Valores dos Cards Principais
-    document.getElementById('valTemperature').innerHTML = `${v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">°C</span>`;
-    document.getElementById('valHumidity').innerHTML = `${v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-')}<span class="text-xl font-light opacity-40">%</span>`;
-    
-    // CO2 mantendo estritamente a cor padrão do tema
-    const valorCO2fleshy = v.co2 || dadosBanco.co2 || '----';
-    document.getElementById('valCO2').innerHTML = `<span class="text-slate-900 dark:text-white font-black text-3xl sm:text-4xl">${valorCO2fleshy}</span> <span class="text-base font-light opacity-40">PPM</span>`;
-    
-    // Ponto de Orvalho
-    const elOrvalho = document.getElementById('valPontoOrvalho');
-    if (elOrvalho) {
+    if (domElements.valTemperature) {
+        const temp = v.temperature ? v.temperature.toFixed(1) : (dadosBanco.temperature ? Number(dadosBanco.temperature).toFixed(1) : '--.-');
+        domElements.valTemperature.innerHTML = `${temp}<span class="text-xl font-light opacity-40">°C</span>`;
+    }
+    if (domElements.valHumidity) {
+        const hum = v.humidity ? v.humidity.toFixed(1) : (dadosBanco.humidity ? Number(dadosBanco.humidity).toFixed(1) : '--.-');
+        domElements.valHumidity.innerHTML = `${hum}<span class="text-xl font-light opacity-40">%</span>`;
+    }
+    if (domElements.valCO2) {
+        domElements.valCO2.innerHTML = `<span class="text-slate-900 dark:text-white font-black text-3xl sm:text-4xl">${v.co2 || dadosBanco.co2 || '----'}</span> <span class="text-base font-light opacity-40">PPM</span>`;
+    }
+    if (domElements.valPontoOrvalho) {
         const valorOrvalho = relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--.-';
-        elOrvalho.innerHTML = `<span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">${valorOrvalho}</span><span class="text-xl font-light opacity-40">°C</span>`;
+        domElements.valPontoOrvalho.innerHTML = `<span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">${valorOrvalho}</span><span class="text-xl font-light opacity-40">°C</span>`;
     }
 
-    // Coleta dos dados brutos de Massa
+    // Processamento e Correlação de Partículas
     const m10 = Number(dadosBanco.pm1_0 || v.pm1_0 || v["PM1.0"] || 0);
     const m25 = Number(dadosBanco.pm25 || v.pm25 || v["PM2.5"] || 0);
     const m40 = Number(dadosBanco.pm4_0 || v.pm4_0 || v["PM4.0"] || v.pm40 || 0);
     const m100 = Number(dadosBanco.pm10 || v.pm10 || v["PM10"] || 0);
 
-    // Coleta dos dados brutos de Contagem Quantitativa
     const contagem = t.contagemParticulas || {};
-    const q10 = contagem.nc0_5 ? contagem.nc0_5 : (dadosBanco.nc0_5 ? Number(dadosBanco.nc0_5) : 0);
-    const q25 = contagem.nc1_0 ? contagem.nc1_0 : (dadosBanco.nc1_0 ? Number(dadosBanco.nc1_0) : 0);
-    const q40 = contagem.nc2_5 ? contagem.nc2_5 : (dadosBanco.nc2_5 ? Number(dadosBanco.nc2_5) : 0);
-    const q100 = contagem.nc10_0 ? contagem.nc10_0 : (dadosBanco.nc10_0 ? Number(dadosBanco.nc10_0) : 0);
+    const q10 = contagem.nc0_5 || dadosBanco.nc0_5 || 0;
+    const q25 = contagem.nc1_0 || dadosBanco.nc1_0 || 0;
+    const q40 = contagem.nc2_5 || dadosBanco.nc2_5 || 0;
+    const q100 = contagem.nc10_0 || dadosBanco.nc10_0 || 0;
 
-    // Motores de Correlação de Partículas
-    const avaliarAnomaliaParticula = (massa, contagem, statusIndividualContagem, limiteMassaCritico) => {
+    const avaliarAnomaliaParticula = (massa, contagem, statusContagem, limiteCritico) => {
         if (!massa && !contagem) return "BOM";
-        if (statusIndividualContagem === "CRÍTICO" || massa > limiteMassaCritico) return "CRITICO";
-        if (statusIndividualContagem === "ALERTA" || massa > (limiteMassaCritico * 0.5)) return "ALERTA";
+        if (statusContagem === "CRÍTICO" || massa > limiteCritico) return "CRITICO";
+        if (statusContagem === "ALERTA" || massa > (limiteCritico * 0.5)) return "ALERTA";
         return "BOM";
     };
 
-    const statusC05  = avaliarAnomaliaParticula(m10, q10, relatorio.analiseIndividual.nc05, 25);
-    const statusC10  = avaliarAnomaliaParticula(m25, q25, relatorio.analiseIndividual.nc10, 15);
+    const statusC05  = avaliarAnomaliaParticula(m10, q10, relatorio.analiseIndividual?.nc05, 25);
+    const statusC10  = avaliarAnomaliaParticula(m25, q25, relatorio.analiseIndividual?.nc10, 15);
     const statusC25  = avaliarAnomaliaParticula(m40, q40, "BOM", 40);
-    const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual.nc100, 50);
+    const statusC100 = avaliarAnomaliaParticula(m100, q100, relatorio.analiseIndividual?.nc100, 50);
 
-    // Lógica Semafórica dos Cards Principais
-    pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
-    pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
-    pintarCard('cardCO2', 'statusCO2', relatorio.analiseIndividual.co2);
-    
-    if (document.getElementById('cardOrvalho')) {
+    // Pintar Cards Semafóricos
+    if (relatorio.analiseIndividual) {
+        pintarCard('cardTemp', 'statusTemp', relatorio.analiseIndividual.temperatura);
+        pintarCard('cardHum', 'statusHum', relatorio.analiseIndividual.umidade);
+        pintarCard('cardCO2', 'statusCO2', relatorio.analiseIndividual.co2);
         pintarCard('cardOrvalho', 'statusOrvalho', relatorio.analiseIndividual.umidade);
     }
 
-    // Banner de Alerta Crítico Físico
-    const bannerInfo = document.getElementById('alertaInfoCritico');
-    if (bannerInfo) {
-        if (relatorio.statusGeral === "CRÍTICO") bannerInfo.classList.remove('hidden');
-        else bannerInfo.classList.add('hidden');
+    // Banner Crítico
+    if (domElements.alertaInfoCritico) {
+        domElements.alertaInfoCritico.classList.toggle('hidden', relatorio.statusGeral !== "CRÍTICO");
     }
 
-    // Status Geral Semafórico Superior (Lado Direito do Topo Ajustado Verticalmente)
-    const panelStatus = document.getElementById('panelStatusGeral');
-    const txtStatus = document.getElementById('txtStatusGeral');
-    
-    if (relatorio.statusGeral === "CONFORME") {
-        panelStatus.className = "md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
-        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
-        txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
-        document.getElementById('panelTriagem').innerHTML = `
-            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-medium text-xs text-center leading-relaxed">
-                ✅ Parâmetros operacionais em total conformidade normativa. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
-            </div>`;
-    } else {
-        const critico = relatorio.statusGeral === "CRÍTICO";
-        // Aplicação do py-2 px-4 e items-center para harmonização imediata de proporção com o Score ao lado
-        panelStatus.className = `md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
-        txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
-        txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
+    // Painel de Status Geral e Triagem Normativa
+    const { panelStatus, txtStatus, panelTriagem } = domElements;
+    if (panelStatus && txtStatus && panelTriagem) {
+        if (relatorio.statusGeral === "CONFORME") {
+            panelStatus.className = "md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all bg-emerald-500 text-white border-emerald-400 font-bold flex items-center justify-center md:justify-start";
+            txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
+            txtStatus.innerText = "🛡️ AMBIENTE EM CONFORMIDADE COM A ANVISA & NBR 17037";
+            panelTriagem.innerHTML = `
+                <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 font-medium text-xs text-center leading-relaxed">
+                    ✅ Parâmetros operacionais em total conformidade normativa. Nenhuma ação corretiva ou mitigação técnica é necessária para este ambiente climatizado.
+                </div>`;
+        } else {
+            const critico = relatorio.statusGeral === "CRÍTICO";
+            panelStatus.className = `md:col-span-7 rounded-2xl py-2 px-4 text-center md:text-left shadow-sm border-2 transition-all text-white font-bold flex items-center justify-center md:justify-start ${critico ? 'bg-rose-600 border-rose-500 animate-pulse' : 'bg-amber-500 border-amber-400'}`;
+            txtStatus.className = "text-xs sm:text-sm font-black uppercase tracking-wider text-white w-full";
+            txtStatus.innerText = critico ? "🚨 DESVIOS CRÍTICOS DETECTADOS RELATIVOS ÀS NORMAS ANVISA" : "⚠️ AVISO: PARÂMETROS HIGIÊNICOS EM ATENÇÃO PREVENTIVA";
 
-        let htmlAlertas = `
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl space-y-3 shadow-sm">
-                <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>
-        `;
+            let htmlAlertas = `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl space-y-3 shadow-sm">
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1">📋 Diretrizes Técnicas Ativas</h3>`;
 
-        if (relatorio.violacoes && relatorio.violacoes.length > 0) {
-            const possuiDesvioUmidade = relatorio.violacoes.some(e => e.parametro === "Umidade");
-            const jaPossuiOrvalho = relatorio.violacoes.some(e => e.parametro === "PontoOrvalho");
-            
-            if (possuiDesvioUmidade && !jaPossuiOrvalho) {
-                relatorio.violacoes.push({
-                    parametro: "PontoOrvalho",
-                    valor: relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--',
-                    unidade: "°C",
-                    gravidade: relatorio.analiseIndividual.umidade
+            if (relatorio.violacoes && relatorio.violacoes.length > 0) {
+                if (relatorio.violacoes.some(e => e.parametro === "Umidade") && !relatorio.violacoes.some(e => e.parametro === "PontoOrvalho")) {
+                    relatorio.violacoes.push({
+                        parametro: "PontoOrvalho",
+                        valor: relatorio.pontoOrvalho ? relatorio.pontoOrvalho.toFixed(1) : '--',
+                        unidade: "°C",
+                        gravidade: relatorio.analiseIndividual?.umidade
+                    });
+                }
+
+                relatorio.violacoes.forEach(erro => {
+                    const eCritico = erro.gravidade === 'CRÍTICO';
+                    const corBorda = eCritico ? 'border-rose-500' : 'border-amber-500';
+                    const corTexto = eCritico ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400';
+
+                    htmlAlertas += `
+                        <div class="bg-slate-50 dark:bg-slate-950/40 border-l-4 ${corBorda} rounded-xl p-3 shadow-sm transition-all">
+                            <details class="group">
+                                <summary class="flex justify-between items-center cursor-pointer list-none focus:outline-none select-none">
+                                    <div class="space-y-0.5">
+                                        <p class="text-xs font-bold ${corTexto} uppercase tracking-tight">⚠️ ${obterNomeTraduzido(erro.parametro)}</p>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Atual: ${erro.valor}${erro.unidade}</p>
+                                    </div>
+                                    <span class="text-[10px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded font-bold text-slate-500 dark:text-slate-400 group-open:hidden transition-all shadow-sm">👉 Solução</span>
+                                    <span class="text-[10px] bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded font-bold text-slate-600 dark:text-slate-300 hidden group-open:inline transition-all">▲ Ocultar</span>
+                                </summary>
+                                <div class="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-800/80 space-y-2">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">${obterMensagemAnvisa(erro.parametro, erro.valor)}</p>
+                                    <div class="bg-sky-500/[0.06] rounded-xl p-3 border border-sky-500/10">
+                                        <p class="text-[9px] font-mono font-black text-sky-600 dark:text-sky-400 uppercase tracking-wider">🛠️ PROTOCOLO DE MITIGAÇÃO HIGIÊNICA:</p>
+                                        <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1 leading-relaxed">${obterMitigacaoAnvisa(erro.parametro)}</p>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>`;
                 });
             }
-
-            relatorio.violacoes.forEach(erro => {
-                const corBorda = erro.gravidade === 'CRÍTICO' ? 'border-rose-500' : 'border-amber-500';
-                const corTexto = erro.gravidade === 'CRÍTICO' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400';
-
-                htmlAlertas += `
-                    <div class="bg-slate-50 dark:bg-slate-950/40 border-l-4 ${corBorda} rounded-xl p-3 shadow-sm transition-all">
-                        <details class="group">
-                            <summary class="flex justify-between items-center cursor-pointer list-none focus:outline-none select-none">
-                                <div class="space-y-0.5">
-                                    <p class="text-xs font-bold ${corTexto} uppercase tracking-tight">⚠️ ${obterNomeTraduzido(erro.parametro)}</p>
-                                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Atual: ${erro.valor}${erro.unidade}</p>
-                                </div>
-                                <span class="text-[10px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded font-bold text-slate-500 dark:text-slate-400 group-open:hidden transition-all shadow-sm">👉 Solução</span>
-                                <span class="text-[10px] bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded font-bold text-slate-600 dark:text-slate-300 hidden group-open:inline transition-all">▲ Ocultar</span>
-                            </summary>
-                            <div class="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-800/80 space-y-2">
-                                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">${obterMensagemAnvisa(erro.parametro, erro.valor)}</p>
-                                <div class="bg-sky-500/[0.06] rounded-xl p-3 border border-sky-500/10">
-                                    <p class="text-[9px] font-mono font-black text-sky-600 dark:text-sky-400 uppercase tracking-wider">🛠️ PROTOCOLO DE MITIGAÇÃO HIGIÊNICA:</p>
-                                    <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1 leading-relaxed">${obterMitigacaoAnvisa(erro.parametro)}</p>
-                                </div>
-                            </div>
-                        </details>
-                    </div>
-                `;
-            });
+            htmlAlertas += `</div>`;
+            panelTriagem.innerHTML = htmlAlertas;
         }
-        htmlAlertas += `</div>`;
-        document.getElementById('panelTriagem').innerHTML = htmlAlertas;
     }
 
-    // Seção de Partículas (Peso vs Quantidade Real)
-    const quadroCorrelacao = document.getElementById('panelTriagemMassaQuantidade');
-    if (quadroCorrelacao) {
-        const tpsRaw = dadosBanco.typical_size || dadosBanco.typicalSize || dadosBanco.tps || dadosBanco.bpt || t.tamanhoTipico || 0.45;
-        const tamanhoTipicoFormatado = `${Number(tpsRaw).toFixed(2)} µm`;
+    // Seção Física de Partículas (Bloco Inferior)
+    if (domElements.panelTriagemMassaQuantidade) {
+        const tpsRaw = dadosBanco.typical_size || dadosBanco.typicalSize || dadosBanco.tps || t.tamanhoTipico || 0.45;
+        
+        const getClassColor = (status) => status === "CRITICO" ? "text-rose-500 font-black" : (status === "ALERTA" ? "text-amber-500 font-black" : "text-emerald-500 font-black");
+        const getClassBorder = (status) => status === "CRITICO" ? "border-rose-500/50 bg-rose-500/[0.02]" : (status === "ALERTA" ? "border-amber-500/40 bg-amber-500/[0.02]" : "border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20");
 
-        const obtenerClasseCor = (status) => {
-            if (status === "ALERTA") return "text-amber-500 font-black";
-            if (status === "CRITICO") return "text-rose-500 font-black";
-            return "text-emerald-500 font-black";
-        };
-
-        const obtenerClasseBorda = (status) => {
-            if (status === "ALERTA") return "border-amber-500/40 bg-amber-500/[0.02]";
-            if (status === "CRITICO") return "border-rose-500/50 bg-rose-500/[0.02]";
-            return "border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20";
-        };
-
-        quadroCorrelacao.innerHTML = `
+        domElements.panelTriagemMassaQuantidade.innerHTML = `
             <div class="space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-1">
-                    <h2 class="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                        🔬 Análise Física de Partículas (Peso vs. Quantidade Real - NBR 17037)
-                    </h2>
-                    <span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-mono px-2.5 py-1 rounded-md font-bold border border-slate-200 dark:border-slate-700 text-center tracking-tight">
-                        📐 TAMANHO MÉDIO RELEVANTE: ${tamanhoTipicoFormatado}
-                    </span>
+                    <h2 class="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">🔬 Análise Física de Partículas (Peso vs. Quantidade Real - NBR 17037)</h2>
+                    <span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-mono px-2.5 py-1 rounded-md font-bold border border-slate-200 dark:border-slate-700 text-center tracking-tight">📐 TAMANHO MÉDIO RELEVANTE: ${Number(tpsRaw).toFixed(2)} µm</span>
                 </div>
-                
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC05)}">
-                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Bioaerossóis flutuantes</p></div>
-                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
-                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC05)}">${m10 > 0 ? m10.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q10 > 0 ? q10.toFixed(0) : '--'} pt/cm³</span></p>
-                        </div>
-                    </div>
-                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC10)}">
-                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Aerossóis e Fumaças</p></div>
-                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
-                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC10)}">${m25 > 0 ? m25.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q25 > 0 ? q25.toFixed(0) : '--'} pt/cm³</span></p>
-                        </div>
-                    </div>
-                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC25)}">
-                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Poeira Inalável Fina</p></div>
-                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
-                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC25)}">${m40 > 0 ? m40.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q40 > 0 ? q40.toFixed(0) : '--'} pt/cm³</span></p>
-                        </div>
-                    </div>
-                    <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${obtenerClasseBorda(statusC100)}">
-                        <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">Particulado Macroscópico</p></div>
-                        <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
-                            <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${obtenerClasseCor(statusC100)}">${m100 > 0 ? m100.toFixed(2) : '--'} µg/m³</span></p>
-                            <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${q100 > 0 ? q100.toFixed(0) : '--'} pt/cm³</span></p>
-                        </div>
-                    </div>
+                    ${renderParticulaCard("Bioaerossóis flutuantes", m10, q10, getClassBorder(statusC05), getClassColor(statusC05))}
+                    ${renderParticulaCard("Aerossóis e Fumaças", m25, q25, getClassBorder(statusC10), getClassColor(statusC10))}
+                    ${renderParticulaCard("Poeira Inalável Fina", m40, q40, getClassBorder(statusC25), getClassColor(statusC25))}
+                    ${renderParticulaCard("Particulado Macroscópico", m100, q100, getClassBorder(statusC100), getClassColor(statusC100))}
                 </div>
-
-                <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-850 p-3.5 rounded-xl space-y-2 leading-relaxed">
-                    <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
-                        <span class="font-bold text-slate-800 dark:text-slate-200">💡 Entendimento Prático (Partículas):</span> 
-                        A <span class="underline decoration-emerald-500 decoration-2 font-semibold">Massa</span> indica a concentration acumulada no metro cúbico. A <span class="underline decoration-sky-500 decoration-2 font-semibold">Contagem</span> detalha o perfil volumétrico discreto (pt/cm³) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
-                    </p>
-                    <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium border-t border-slate-200 dark:border-slate-800/80 pt-2">
-                        <span class="font-bold text-slate-800 dark:text-slate-200">🌡️ O que é e como ocorre o Ponto de Orvalho?</span> 
-                        É a temperatura exata na qual o ar atinge a sua saturação máxima de umidade (100% de Umidade Relativa). Fisicamente, ocorre quando o ar quente do ambiente—que carrega vapor de água invisível—entra em contato com qualquer superfície ou massa de ar que esteja igual ou abaixo dessa temperatura limite. Ao esfriar repentinamente, o ar perde a capacidade de reter a água em estado gasoso, forçando o vapor a se condensar e se transformar em água líquida (orvalho).
-                    </p>
-                </div>
-            </div>
-        `;
+            </div>`;
     }
 }
 
+function renderParticulaCard(titulo, massa, contagem, classeBorda, classeCorMassa) {
+    return `
+        <div class="p-3.5 border rounded-xl flex flex-col justify-between text-center ${classeBorda}">
+            <div><p class="text-xs text-slate-800 dark:text-slate-200 font-bold uppercase tracking-tight">${titulo}</p></div>
+            <div class="mt-2 py-2 bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/80 rounded-xl space-y-1">
+                <p class="text-[11px] text-slate-400 font-medium">Massa: <span class="${classeCorMassa}">${massa > 0 ? massa.toFixed(2) : '--'} µg/m³</span></p>
+                <p class="text-[11px] text-slate-400 font-medium">Contagem: <span class="text-sky-500 font-bold">${contagem > 0 ? contagem.toFixed(0) : '--'} pt/cm³</span></p>
+            </div>
+        </div>`;
+}
+
 function pintarCard(cardId, statusId, nivel) {
-    const card = document.getElementById(cardId);
-    const status = document.getElementById(statusId);
+    const card = domElements[cardId] || document.getElementById(cardId);
+    const status = domElements[statusId] || document.getElementById(statusId);
     if (!card || !status) return;
     
     card.classList.remove('border-emerald-500', 'border-amber-500', 'border-rose-600', 'border-transparent');
