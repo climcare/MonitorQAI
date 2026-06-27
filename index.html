@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QAI - Inteligência Ambiental OMS</title>
+    <title>QAI | Plataforma Inteligente de Qualidade Ambiental</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -42,8 +42,11 @@
                 </div>
                 <div>
                     <h1 class="text-sm sm:text-base font-black tracking-tight uppercase leading-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
-                        Monitoramento Biológico & Qualidade do Ar
+                        Inteligência Ambiental & Qualidade do Ar
                     </h1>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Monitoramento contínuo • Interpretação inteligente • Recomendações ambientais
+                    </p>
                     <div class="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 mt-1 font-bold font-mono text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[11px]">
                         <span>DISPOSITIVO: <span id="txtDeviceId" class="text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">--</span></span>
                         <span>WI-FI: <span id="txtSignal" class="text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">-- dBm</span></span>
@@ -67,8 +70,8 @@
                 </div>
                 <div class="w-full space-y-1">
                     <div class="flex justify-between items-center gap-1">
-                        <span class="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Índice Geral de Qualidade</span>
-                        <span id="lblScoreStatus" class="text-[9px] sm:text-[10px] font-black uppercase text-emerald-500 shrink-0">ANALISANDO</span>
+                        <span class="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Qualidade do Ambiente</span>
+                        <span id="lblScoreStatus" class="text-[9px] sm:text-[10px] font-black uppercase text-emerald-500 shrink-0">ANALISANDO...</span>
                     </div>
                     <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 sm:h-2 rounded-full overflow-hidden">
                         <div id="barScoreProgresso" class="bg-emerald-500 h-full transition-all duration-700" style="width: 0%;"></div>
@@ -92,7 +95,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div id="cardTemp" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
-                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🌡️ Temperatura</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🌡️ Conforto Térmico</span>
                             <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">20~24°C</span>
                         </div>
                         <div class="text-3xl sm:text-4xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valTemperature">--.-<span class="text-lg font-light opacity-40">°C</span></div>
@@ -110,8 +113,8 @@
 
                     <div id="cardCO2" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
-                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🍃 Ar Abafado</span>
-                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">1000 PPM</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🍃 Renovação do Ar</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">Referência 1000 ppm</span>
                         </div>
                         <div class="text-2xl sm:text-3xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valCO2">---- <span class="text-sm font-light opacity-40">PPM</span></div>
                         <div id="statusCO2" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
@@ -119,8 +122,8 @@
 
                     <div id="cardOrvalho" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border-2 border-transparent transition-all flex flex-col justify-between min-h-[125px]">
                         <div class="flex justify-between items-start gap-1">
-                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💦 Pt. Orvalho</span>
-                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">Dinâmico</span>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">💦 Risco de Condensação</span>
+                            <span class="text-[9px] font-mono text-slate-400 opacity-60 shrink-0">Calculado</span>
                         </div>
                         <div class="text-2xl sm:text-3xl font-black tracking-tighter my-1 text-slate-900 dark:text-white" id="valPontoOrvalho">--.-<span class="text-sm font-light opacity-40">°C</span></div>
                         <div id="statusOrvalho" class="text-[9px] font-black uppercase py-0.5 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 w-fit">Analisando...</div>
@@ -133,8 +136,7 @@
                     <div id="alertaInfoCritico" class="hidden p-3.5 bg-rose-500/10 dark:bg-rose-500/[0.03] border border-rose-500/20 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 flex items-start gap-3">
                         <span class="text-base shrink-0 mt-0.5">⚠️</span>
                         <div class="leading-relaxed">
-                            <strong class="font-bold">ALERTA DE DESCOMPENSAÇÃO FÍSICA:</strong> Níveis críticos detectados. Partículas ultrafinas leves (como vírus) podem estar saturando o ambiente sem alterar expressivamente o peso total medido.
-                        </div>
+                            <strong class="font-bold">ALERTA DE QUALIDADE AMBIENTAL:</strong> Níveis críticos detectados. Foi identificada uma concentração elevada de partículas ultrafinas em suspensão. Esse comportamento pode indicar redução da qualidade ambiental e recomenda-se verificar a ventilação do ambiente e possíveis fontes de emissão.</div>
                     </div>
 
                     <div class="border-t border-slate-100 dark:border-slate-800/80 pt-4 space-y-2">
@@ -148,11 +150,12 @@
                         </div>
 
                         <div id="helpParticulas" class="hidden p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/40 dark:border-slate-800/60 rounded-xl text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                            A <strong class="text-slate-700 dark:text-slate-200">Massa</strong> indica a concentração acumulada no metro cúbico. A <strong class="text-slate-700 dark:text-slate-200">Contagem</strong> detalha o perfil volumétrico discreto ($pt/cm^3$) de impurezas dinâmicas no ar interior, conforme a regulamentação higiênica nacional.
+                            A <strong class="text-slate-700 dark:text-slate-200">Massa</strong> representa a quantidade total de partículas presentes no ar. A <strong class="text-slate-700 dark:text-slate-200">Contagem</strong> mostra quantas partículas estão suspensas, mesmo quando são tão pequenas que quase não influenciam a massa medida.
+                            <p>As duas informações se complementam para oferecer uma visão mais completa da qualidade do ambiente.</p>
                         </div>
 
                         <div id="helpOrvalho" class="hidden p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/40 dark:border-slate-800/60 rounded-xl text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                            É a temperatura exata na qual o ar atinge a sua saturação máxima de umidade (100% de Umidade Relativa). Fisicamente, ocorre quando o ar quente do ambiente entra em contato com qualquer superfície ou massa de ar que esteja igual ou abaixo dessa temperatura limite, forçando o vapor a se condensar e se transformar em água líquida (orvalho).
+                            O ponto de orvalho é a temperatura em que a umidade do ar começa a se transformar em água. Quando a temperatura do ambiente se aproxima desse ponto, aumenta a possibilidade de condensação em paredes, janelas e equipamentos, favorecendo umidade excessiva e mofo.
                         </div>
                     </div>
                 </section>
@@ -161,14 +164,14 @@
             <div class="lg:col-span-4 space-y-4">
                 <div class="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-3.5">
                     <div>
-                        <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-wider">🫁 Impacto Clínico Projetado (Ocupantes)</h3>
-                        <p class="text-[11px] text-slate-500 font-medium mt-0.5 leading-tight">Probabilidade de reações sintomáticas imediatas baseadas nos dados ambientais.</p>
+                        <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-wider">🫁 Indicador de Conforto Ambiental</h3>
+                        <p class="text-[11px] text-slate-500 font-medium mt-0.5 leading-tight">Como as condições atuais do ambiente podem ser percebidas pelos ocupantes.</p>
                     </div>
 
                     <div class="space-y-3">
                         <div class="space-y-1">
                             <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
-                                <span class="flex items-center gap-1.5"><span id="icoSintomaFadiga" class="text-sm">💤</span> Fadiga & Sonolência</span>
+                                <span class="flex items-center gap-1.5"><span id="icoSintomaFadiga" class="text-sm">💤</span>Potencial de Fadiga & Sonolência</span>
                                 <span id="txtPctFadiga" class="font-mono text-[11px] text-slate-400">0%</span>
                             </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200/20">
@@ -178,7 +181,7 @@
 
                         <div class="space-y-1">
                             <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
-                                <span class="flex items-center gap-1.5"><span id="icoSintomaAlergia" class="text-sm">🤧</span> Rinite & Estresse Alérgico</span>
+                                <span class="flex items-center gap-1.5"><span id="icoSintomaAlergia" class="text-sm">🤧</span> Potencial de Desconforto Alérgico</span>
                                 <span id="txtPctAlergia" class="font-mono text-[11px] text-slate-400">0%</span>
                             </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200/20">
@@ -188,7 +191,7 @@
 
                         <div class="space-y-1">
                             <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300">
-                                <span class="flex items-center gap-1.5"><span id="icoSintomaDesconforto" class="text-sm">🫁</span> Desconforto Respiratório</span>
+                                <span class="flex items-center gap-1.5"><span id="icoSintomaDesconforto" class="text-sm">🫁</span> Potencial de Desconforto Respiratório</span>
                                 <span id="txtPctDesconforto" class="font-mono text-[11px] text-slate-400">0%</span>
                             </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-200/20">
@@ -200,7 +203,7 @@
 
                 <div class="space-y-2">
                     <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">
-                        Triagem e Resposta Rápida OMS
+                        Recomendações Ambientais
                     </h2>
                     <div id="panelTriagem" class="space-y-3"></div>
                 </div>
